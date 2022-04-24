@@ -43,8 +43,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
               new UsernamePasswordAuthenticationToken(playerDetail, null,
                   playerDetail.getAuthorities());
 
-          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
+          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       }

@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,10 +25,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@Slf4j
 @RequestMapping("/api/auth")
 public class AuthorizationController {
     private PlayerService playerService;
@@ -65,11 +69,11 @@ public class AuthorizationController {
     }
 
     @PutMapping("/logout")
-    ResponseEntity<ResponseObject<Object>> logout() {
+    ResponseEntity<ResponseObject<Object>> logout(@CookieValue(name = "${xiangqibe.app.jwtCookieName}") String jwt ) {
         try {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            var username = jwtUtils.getUserNameFromJwtToken(jwt);
             playerService.logout(username);
-            System.console().printf(username + " logged out");
+            log.info(username + " logged out");
             return ResponseObject.Response(HttpStatus.OK, "Logged out successfully", null);
         } catch (Exception e) {
             return ResponseObject.Response(HttpStatus.BAD_REQUEST, e.getMessage(), null);
