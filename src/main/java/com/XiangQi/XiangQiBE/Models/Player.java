@@ -1,22 +1,55 @@
 package com.XiangQi.XiangQiBE.Models;
 
-import java.util.List;
+import java.util.Date;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import com.mongodb.lang.NonNull;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Document("Players")
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
+@RequiredArgsConstructor
 public class Player {
   @Id
-  private String userName;
+  private String id;
+
+  @Indexed(unique = true)
+  @NotBlank
+  @lombok.NonNull
+  @Size(max=20)
+  private String username;
+
+  @Setter
+  @NotBlank
+  @Size(max=120)
+  @lombok.NonNull
   private String password;
-  private List<Matches> matches;
+
+  @Setter
+  @Indexed(unique = true)
+  @NotBlank
+  @Email
+  @lombok.NonNull
+  @Size(max=50)
+  private String email;
+
+  @NonNull
+  private boolean validated = false;
+  private Date logoutDate = new Date();
+
+  public void logout() {
+    logoutDate = new Date();
+  }
+
+  public void validate() {
+    validated = true;
+  }
 }
