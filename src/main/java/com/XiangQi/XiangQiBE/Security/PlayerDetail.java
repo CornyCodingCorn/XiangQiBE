@@ -16,7 +16,6 @@ public class PlayerDetail implements UserDetails {
     private String username;
     private String email;
     private String id;
-    private Date logoutDate;
 
     @JsonIgnore
     private String password;
@@ -27,7 +26,6 @@ public class PlayerDetail implements UserDetails {
         email = player.getEmail();
         id = player.getId();
         password = player.getPassword();
-        logoutDate = player.getLogoutDate();
     }
     
     @Override

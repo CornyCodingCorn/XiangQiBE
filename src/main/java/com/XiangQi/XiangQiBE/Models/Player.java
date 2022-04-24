@@ -43,11 +43,6 @@ public class Player {
 
   @NonNull
   private boolean validated = false;
-  private Date logoutDate = new Date();
-
-  public void logout() {
-    logoutDate = new Date();
-  }
 
   public void validate() {
     validated = true;

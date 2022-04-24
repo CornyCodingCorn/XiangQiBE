@@ -34,19 +34,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
         var decodedToken = jwtUtils.decodeJwtToken(jwt);
         String username = decodedToken.getSubject();
-        Date issueDate = decodedToken.getIssuedAt();
 
         PlayerDetail playerDetail = (PlayerDetail) userDetailsService.loadUserByUsername(username);
         // Check if the token is still valid
-        if (playerDetail.getLogoutDate().compareTo(issueDate) <= 0) {
-          UsernamePasswordAuthenticationToken authentication =
-              new UsernamePasswordAuthenticationToken(playerDetail, null,
-                  playerDetail.getAuthorities());
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(playerDetail, null,
+                playerDetail.getAuthorities());
 
-
-          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     } catch (Exception e) {
       logger.error("Cannot set user authentication: {}", e);
@@ -56,7 +52,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   }
 
   private String parseJwt(HttpServletRequest request) {
-    String jwt = jwtUtils.getJwtFromCookies(request);
+    String jwt = jwtUtils.getJwtFromHeader(request);
     return jwt;
   }
 }

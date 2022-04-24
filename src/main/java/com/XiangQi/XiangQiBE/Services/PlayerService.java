@@ -53,12 +53,4 @@ public class PlayerService {
 
     return player;
   }
-
-  public void logout(String username) throws UsernameNotFoundException {
-    Player player = playerRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-
-    player.logout();
-
-    playerRepo.save(player);
-  }
 }
