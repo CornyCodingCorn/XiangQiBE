@@ -3,6 +3,8 @@ package com.XiangQi.XiangQiBE.Security;
 import com.XiangQi.XiangQiBE.Security.Jwt.AuthEntryPointJwt;
 import com.XiangQi.XiangQiBE.Security.Jwt.AuthTokenFilter;
 import com.XiangQi.XiangQiBE.Services.PlayerDetailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,18 +16,30 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import lombok.AllArgsConstructor;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Base64.Decoder;
 
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  @Autowired
   private PlayerDetailService playerDetailService;
+  @Autowired
   private AuthEntryPointJwt unauthorizedHandler;
+
+  private final String salt;
+
+  public SecurityConfig(@Value("${xiangqibe.app.salt}") String salt) {
+    this.salt = salt;
+  }
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder(10);
+    Decoder decoder = Base64.getDecoder();
+
+    SecureRandom secureRandom = new SecureRandom(decoder.decode(salt));
+    return new BCryptPasswordEncoder(10, secureRandom);
   }
 
   @Bean

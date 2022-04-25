@@ -10,6 +10,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,35 +34,33 @@ public class JwtService {
         tokenRepo.save(tokenDoc);
 
         // Create jwt and create refresh jwt from it
-        String jwt = jwtUtils.generateToken(username);
-        String jwtRefresh = jwtUtils.generateRefreshToken(username, tokenDoc.getId(), jwt);
+        var pair = generateJwtPair(username, tokenDoc.getId());
 
-        tokenDoc.setToken(jwtRefresh);
+        tokenDoc.setToken(pair.getSecond());
         tokenRepo.save(tokenDoc);
 
-        ResponseCookie cookie = createCookie(jwtRefresh);
-        return new JwtPair(jwt, cookie);
+        ResponseCookie cookie = createCookie(pair.getSecond());
+        return new JwtPair(pair.getFirst(), cookie);
     }
 
     public JwtPair refreshJwtToken(String jwtToken, String refreshToken) throws JWTVerificationException, RuntimeException {
-        DecodedJWT refreshJwt = jwtUtils.decodeJwtToken(refreshToken);
+        DecodedJWT refreshJwt = jwtUtils.decodeRefreshToken(refreshToken);
         JwtPayload payload = JwtPayload.createPayload(refreshJwt.getPayload());
 
-        if (payload.getJwtToken().compareTo(jwtToken) != 0) {
+        if (!jwtUtils.getJwtEncoder().matches(jwtToken, payload.getJwtToken())) {
             throw new JWTVerificationException("Jwt token mismatch");
         }
 
         String username = refreshJwt.getSubject();
         var tokenDoc = tokenRepo.findById(payload.getTokenID()).orElseThrow(() -> new JWTVerificationException("Refresh token doesn't exist in database") );
 
-        String jwt = jwtUtils.generateToken(username);
-        String jwtRefresh = jwtUtils.generateRefreshToken(username, tokenDoc.getId(), jwt);
+        var pair = generateJwtPair(username, tokenDoc.getId());
         
-        tokenDoc.setToken(jwtRefresh);
+        tokenDoc.setToken(pair.getSecond());
         tokenRepo.save(tokenDoc);
 
-        ResponseCookie cookie = createCookie(jwtRefresh);
-        return new JwtPair(jwt, cookie);
+        ResponseCookie cookie = createCookie(pair.getSecond());
+        return new JwtPair(pair.getFirst(), cookie);
     }
 
     public void logout(String refreshToken) throws JWTVerificationException {
@@ -72,5 +71,12 @@ public class JwtService {
 
     private ResponseCookie createCookie(String jwt) {
         return ResponseCookie.from(jwtUtils.getJwtCookie(), jwt).path("/api").maxAge(24 * 60 * 60).build();
+    }
+
+    private Pair<String, String> generateJwtPair(String username, String tokenID) {
+        String jwt = jwtUtils.generateToken(username);
+        String jwtRefresh = jwtUtils.generateRefreshToken(username, tokenID, jwtUtils.getJwtEncoder().encode(jwt));
+
+        return Pair.of(jwt, jwtRefresh);
     }
 }
