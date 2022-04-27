@@ -58,7 +58,7 @@ public class LobbyService {
     }
 
     public Lobby Move(String player, String move) throws LobbyException {
-        var lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
+        var lobby = getPlayerLobby(player);
 
         // Check if moves valid
         if (lobby.getState() == Lobby.State.FINISHED) {
@@ -78,7 +78,7 @@ public class LobbyService {
     }
 
     public Lobby Ready(String player) throws LobbyException {
-        var lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
+        var lobby = getPlayerLobby(player);
 
         sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player);
 
@@ -93,7 +93,7 @@ public class LobbyService {
     }
 
     public void Quit(String player) throws LobbyException {
-        var lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
+        var lobby = getPlayerLobby(player);
 
         sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player);
         lobby.Quit(player);
@@ -104,6 +104,11 @@ public class LobbyService {
         }
 
         lobbyRepo.save(lobby);
+    }
+
+    public Lobby getPlayerLobby(String player) throws LobbyException {
+        var lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
+        return lobby;
     }
 
     private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player) {
