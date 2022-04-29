@@ -1,7 +1,6 @@
 package com.XiangQi.XiangQiBE.Controllers;
 
 import javax.validation.Valid;
-import com.XiangQi.XiangQiBE.Configurations.ApplicationProperties;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
 import com.XiangQi.XiangQiBE.Security.PlayerDetail;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
@@ -10,7 +9,6 @@ import com.XiangQi.XiangQiBE.Services.PlayerService;
 import com.XiangQi.XiangQiBE.dto.PlayerDto;
 import com.XiangQi.XiangQiBE.dto.PlayerLoginDto;
 import com.XiangQi.XiangQiBE.dto.PlayerRegisterDto;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -61,7 +61,7 @@ public class JwtUtils {
     Decoder decoder = (Decoder) Base64.getDecoder();
 
     SecureRandom secureRandom = new SecureRandom(decoder.decode(salt));
-    jwtEncoder = new BCryptPasswordEncoder(1, secureRandom);
+    jwtEncoder = new BCryptPasswordEncoder(4, secureRandom);
   }
 
   public String DecodePart(String encodedPart) {
@@ -82,7 +82,7 @@ public class JwtUtils {
     return request.getHeader(jwtHeader);
   }
 
-  public String getUserNameFromJwtToken(String token) {
+  public String getUserNameFromJwtToken(String token) throws JWTVerificationException {
     var decodedJwt = decodeJwtToken(token);
     if (decodedJwt == null) {
       return "";

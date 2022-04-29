@@ -14,6 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @GetMapping("/1")
     ResponseEntity<ResponseObject<Object>> testEndpoint() {
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject<Object>(HttpStatus.OK, "test endpoint", null));
+        return ResponseObject.Response(HttpStatus.OK, "test endpoint", null);
     }
 }

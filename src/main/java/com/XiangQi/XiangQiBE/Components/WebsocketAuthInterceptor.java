@@ -3,8 +3,6 @@ package com.XiangQi.XiangQiBE.Components;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
-import com.XiangQi.XiangQiBE.Services.LobbyService;
-import com.XiangQi.XiangQiBE.Services.LobbyService.LobbyException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
@@ -18,11 +16,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class WebsocketAuthInterceptor implements ChannelInterceptor {
     public class WebsocketAuthError extends Error {
-        public WebsocketAuthError(String message) {super(message);}
+        public WebsocketAuthError(String message) {
+            super(message);
+        }
     }
 
     @Autowired
-    private LobbyService lobbyService;
+    private LobbyRepo lobbyRepo;
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -30,10 +30,16 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         var jwtStr = (String) accessor.getHeader("${xiangqibe.app.jwt-header}");
+        String player = "";
+
+        if (StompCommand.CONNECT == accessor.getCommand()) {
+            player = getPlayerName(jwtStr);
+        }
 
         if (StompCommand.SUBSCRIBE == accessor.getCommand()) {
             var destination = accessor.getDestination();
-            if (destination.isBlank()) throw new WebsocketAuthError("The destination can't be blank");
+            if (destination.isBlank())
+                throw new WebsocketAuthError("The destination can't be blank");
 
             var movePattern = "/lobbies/+[a-zA-Z0-9-]+";
             if (destination.matches(movePattern)) {
@@ -49,11 +55,13 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
                 }
 
                 // Get player lobby
-                String player = jwtUtils.getUserNameFromJwtToken(jwtStr);
+                if (player.isBlank()) {
+                    player = getPlayerName(jwtStr);
+                }
                 Lobby lobby = null;
                 try {
-                    lobby = lobbyService.getPlayerLobby(player);
-                } catch (LobbyException e) {
+                    lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new Exception());
+                } catch (Exception e) {
                     throw new WebsocketAuthError("Player haven't join any lobby");
                 }
 
@@ -68,5 +76,12 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
 
         return message;
     }
-    
+
+    private String getPlayerName(String jwt) throws WebsocketAuthError {
+        try {
+            return jwtUtils.getUserNameFromJwtToken(jwt);
+        } catch (JWTVerificationException e) {
+            throw new WebsocketAuthError("Player haven't join any lobby");
+        }
+    }
 }
