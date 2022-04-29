@@ -2,7 +2,6 @@ package com.XiangQi.XiangQiBE.Services;
 
 import com.XiangQi.XiangQiBE.Models.Token;
 import com.XiangQi.XiangQiBE.Repositories.TokenRepo;
-import com.XiangQi.XiangQiBE.Security.PlayerDetail;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtPayload;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
 import com.XiangQi.XiangQiBE.utils.JsonUtils;
@@ -10,7 +9,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -70,7 +68,7 @@ public class JwtService {
     }
 
     private ResponseCookie createCookie(String jwt) {
-        return ResponseCookie.from(jwtUtils.getJwtCookie(), jwt).path("/api").maxAge(24 * 60 * 60).build();
+        return ResponseCookie.from(jwtUtils.getJwtCookie(), jwt).path("/api").maxAge(24 * 60 * 60).sameSite("Lax").build();
     }
 
     private Pair<String, String> generateJwtPair(String username, String tokenID) {

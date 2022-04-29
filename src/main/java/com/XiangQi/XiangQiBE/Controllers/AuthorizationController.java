@@ -17,7 +17,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthorizationController {
@@ -38,7 +36,7 @@ public class AuthorizationController {
 
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<PlayerDto>> authenticateUser(
-            @Valid @RequestBody PlayerLoginDto loginRequest) {
+            @RequestBody PlayerLoginDto loginRequest) {
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(), loginRequest.getPassword()));
@@ -47,12 +45,14 @@ public class AuthorizationController {
         PlayerDetail player = (PlayerDetail) authentication.getPrincipal();
         var jwtPair = jwtService.generateJwtToken(player.getUsername());
 
-        return ResponseEntity.status(HttpStatus.OK)
+        var response = ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, jwtPair.getCookie().toString())
                 .header(jwtUtils.getJwtHeader(), jwtPair.getJwt())
                 .body(new ResponseObject<PlayerDto>(HttpStatus.OK,
                         "User " + player.getUsername() + " login successfully",
                         new PlayerDto(player.getId(), player.getUsername(), player.getEmail())));
+
+        return response;
     }
 
     @PostMapping("/register")
