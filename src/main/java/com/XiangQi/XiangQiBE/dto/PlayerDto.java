@@ -1,6 +1,7 @@
 package com.XiangQi.XiangQiBE.dto;
 
 import javax.validation.constraints.NotBlank;
+import com.XiangQi.XiangQiBE.Models.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,4 +16,10 @@ public class PlayerDto {
     private String username;
     @NotBlank
     private String email;
+
+    public PlayerDto(Player player) {
+        this.id = player.getId();
+        this.username = player.getUsername();
+        this.email = player.getEmail();
+    }
 }

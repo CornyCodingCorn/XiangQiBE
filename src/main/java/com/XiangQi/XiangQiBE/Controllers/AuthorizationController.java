@@ -1,8 +1,8 @@
 package com.XiangQi.XiangQiBE.Controllers;
 
 import javax.validation.Valid;
+import com.XiangQi.XiangQiBE.Models.Player;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
-import com.XiangQi.XiangQiBE.Security.PlayerDetail;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
 import com.XiangQi.XiangQiBE.Services.JwtService;
 import com.XiangQi.XiangQiBE.Services.PlayerService;
@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,25 +35,46 @@ public class AuthorizationController {
     private AuthenticationManager authenticationManager;
     private JwtService jwtService;
 
+    @GetMapping()
+    public ResponseEntity<ResponseObject<PlayerDto>> getPlayerInfo(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken) {
+        try {
+            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
+            Player player = playerService.get(username);
+            var response = ResponseEntity.status(HttpStatus.OK)
+                    .body(new ResponseObject<PlayerDto>(HttpStatus.OK,
+                            "User " + player.getUsername() + " login successfully", new PlayerDto(player)));
+
+            return response;
+        } catch (Exception e) {
+            return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<PlayerDto>> authenticateUser(
             @RequestBody PlayerLoginDto loginRequest) {
-        Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(), loginRequest.getPassword()));
+        try {
+            Authentication authentication =
+                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(), loginRequest.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        PlayerDetail player = (PlayerDetail) authentication.getPrincipal();
-        var jwtPair = jwtService.generateJwtToken(player.getUsername());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            Player player;
 
-        var response = ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, jwtPair.getCookie().toString())
-                .header(jwtUtils.getJwtHeader(), jwtPair.getJwt())
-                .body(new ResponseObject<PlayerDto>(HttpStatus.OK,
-                        "User " + player.getUsername() + " login successfully",
-                        new PlayerDto(player.getId(), player.getUsername(), player.getEmail())));
+            player = playerService.get(loginRequest.getUsername());
 
-        return response;
+            var jwtPair = jwtService.generateJwtToken(player.getUsername());
+
+            var response = ResponseEntity.status(HttpStatus.OK)
+                    .header(HttpHeaders.SET_COOKIE, jwtPair.getCookie().toString())
+                    .header(jwtUtils.getJwtHeader(), jwtPair.getJwt())
+                    .body(new ResponseObject<PlayerDto>(HttpStatus.OK,
+                            "User " + player.getUsername() + " login successfully", new PlayerDto(player)));
+
+            return response;
+        } catch (Exception e) {
+            return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
     }
 
     @PostMapping("/register")
@@ -71,7 +93,7 @@ public class AuthorizationController {
 
     @PutMapping("/logout")
     ResponseEntity<ResponseObject<Object>> logout(
-            @CookieValue(name = "${xiangqibe.app.jwtCookieName}") String refreshJwt) {
+            @CookieValue(name = "${xiangqibe.app.jwt-cookie-name}") String refreshJwt) {
         try {
             jwtService.logout(refreshJwt);
             return ResponseObject.Response(HttpStatus.OK, "Logged out successfully", null);

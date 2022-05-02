@@ -62,8 +62,8 @@ public class JwtService {
     }
 
     public void logout(String refreshToken) throws JWTVerificationException {
-        DecodedJWT refreshJwt = jwtUtils.decodeJwtToken(refreshToken);
-        JwtPayload payload = JwtPayload.createPayload(JsonUtils.getJsonAsMap(refreshJwt.getPayload()));
+        DecodedJWT refreshJwt = jwtUtils.decodeRefreshToken(refreshToken);
+        JwtPayload payload = JwtPayload.createPayload(refreshJwt.getPayload());
         tokenRepo.deleteById(payload.getTokenID());
     }
 

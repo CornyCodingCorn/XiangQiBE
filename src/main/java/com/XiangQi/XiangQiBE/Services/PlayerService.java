@@ -1,7 +1,5 @@
 package com.XiangQi.XiangQiBE.Services;
 
-import java.util.Date;
-import javax.validation.Valid;
 import javax.validation.ValidationException;
 import com.XiangQi.XiangQiBE.Components.Validator;
 import com.XiangQi.XiangQiBE.Models.Player;
@@ -52,5 +50,9 @@ public class PlayerService {
     playerRepo.save(player);
 
     return player;
+  }
+
+  public Player get(String username) throws UsernameNotFoundException {
+    return playerRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
   }
 }
