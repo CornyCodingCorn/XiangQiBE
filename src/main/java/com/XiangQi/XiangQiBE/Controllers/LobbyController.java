@@ -1,6 +1,9 @@
 package com.XiangQi.XiangQiBE.Controllers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
@@ -18,7 +21,9 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,17 +35,44 @@ public class LobbyController {
     @Autowired
     private LobbyService lobbyService;
 
-    @PostMapping("/")
-    public ResponseEntity<ResponseObject<LobbyDto>> createLobby() {
-        return null;
+    @PostMapping
+    public ResponseEntity<ResponseObject<LobbyDto>> createLobby(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken) {
+        try {
+            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
+            Lobby lobby = lobbyService.Create(username);
+
+            return ResponseObject.Response(HttpStatus.OK, "Room created", new LobbyDto(lobby));
+        } catch (Exception e) {
+            return ResponseObject.Response(HttpStatus.FORBIDDEN, e.getMessage(), null);
+        }
     }
 
-    @GetMapping("/")
-    public ResponseEntity<ResponseObject<LobbyDto[]>> getAllLobbies() {
-        return null;
+    @GetMapping
+    public ResponseEntity<ResponseObject<List<LobbyDto>>> getAllLobbies() {
+        List<Lobby> lobbies = lobbyService.GetAll();
+        List<LobbyDto> lobbiesDto = new ArrayList<LobbyDto>();
+
+        for (var lobby : lobbies) {
+            lobbiesDto.add(new LobbyDto(lobby));
+        }
+
+        return ResponseObject.Response(HttpStatus.OK, "Room created", lobbiesDto);
     }
 
-    @PutMapping("/")
+    @PutMapping
+    public ResponseEntity<ResponseObject<LobbyDto>> joinLobby(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken, @RequestParam("id") String lobbyID) {
+        try {
+            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
+            Lobby lobby = lobbyService.Join(lobbyID, username);
+
+            return ResponseObject.Response(HttpStatus.OK, "Joined room " + lobbyID, new LobbyDto(lobby));
+        }
+        catch(Exception e) {
+            return ResponseObject.Response(HttpStatus.FORBIDDEN, e.getMessage(), null);
+        }
+    }
+
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseObject<LobbyDto>> ready() {
 
         return null;

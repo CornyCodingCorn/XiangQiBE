@@ -128,7 +128,7 @@ public class Lobby {
     }
 
     public void Quit(String player) {
-        if (player2.equals(player)) {
+        if (player2 != null && player2.equals(player)) {
             player2 = null;
             player2Ready = false;
         }
