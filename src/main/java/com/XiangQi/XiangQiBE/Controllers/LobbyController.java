@@ -78,7 +78,7 @@ public class LobbyController {
         return null;
     }
 
-    @MessageMapping("lobbies/moves")
+    @MessageMapping("/lobbies/moves")
     public ResponseEntity<ResponseObject<Object>> movePiece(@Header(name = "${xiangqibe.app.jwt-header= bearer}") String jwt, Message<String> message) {
         try {
             String player = jwtUtils.getUserNameFromJwtToken(jwt);

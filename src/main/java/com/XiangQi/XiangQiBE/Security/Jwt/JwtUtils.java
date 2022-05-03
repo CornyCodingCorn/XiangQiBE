@@ -82,6 +82,10 @@ public class JwtUtils {
     return request.getHeader(jwtHeader);
   }
 
+  public String getJwtFromParam(HttpServletRequest request) {
+    return request.getParameter(jwtHeader.toLowerCase());
+  }
+
   public String getUserNameFromJwtToken(String token) throws JWTVerificationException {
     var decodedJwt = decodeJwtToken(token);
     if (decodedJwt == null) {

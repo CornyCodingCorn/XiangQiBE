@@ -1,7 +1,6 @@
 package com.XiangQi.XiangQiBE.dto;
 
 import com.XiangQi.XiangQiBE.Models.Lobby;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -12,8 +12,10 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class WebsocketAuthInterceptor implements ChannelInterceptor {
     public class WebsocketAuthError extends Error {
         public WebsocketAuthError(String message) {
@@ -27,16 +29,26 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
     private JwtUtils jwtUtils;
 
     @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    public Message<?> postReceive(Message<?> message, MessageChannel channel) {
         var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         var jwtStr = (String) accessor.getHeader("${xiangqibe.app.jwt-header}");
         String player = "";
 
-        if (StompCommand.CONNECT == accessor.getCommand()) {
-            player = getPlayerName(jwtStr);
-        }
+        // Check if player is authenticated, then set the header for player name 
+        player = getPlayerName(jwtStr);
+        accessor.setHeader("username", player);
 
         if (StompCommand.SUBSCRIBE == accessor.getCommand()) {
+            var destination = accessor.getDestination();
+            log.info(player + " subscribed to " + destination);
+        }
+
+        if (StompCommand.UNSUBSCRIBE == accessor.getCommand()) {
+            var destination = accessor.getDestination();
+            log.info(player + " unsubscribed to " + destination);
+        }
+
+        if (StompCommand.SEND == accessor.getCommand()) {
             var destination = accessor.getDestination();
             if (destination.isBlank())
                 throw new WebsocketAuthError("The destination can't be blank");
@@ -73,6 +85,17 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
                 throw new WebsocketAuthError("The destination doesn't exist");
             }
         }
+
+        return message;
+    }
+
+    @Override
+    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        var jwtStr = (String) accessor.getHeader("${xiangqibe.app.jwt-header}");
+        String player = "";
+
+        
 
         return message;
     }

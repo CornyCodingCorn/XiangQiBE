@@ -1,9 +1,11 @@
 package com.XiangQi.XiangQiBE.Services;
 
 import java.util.List;
+import com.XiangQi.XiangQiBE.Models.LobbiesMessage;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
+import com.XiangQi.XiangQiBE.dto.LobbyDto;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -11,6 +13,8 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class LobbyService {
+    public static final String LOBBY_WS_URL = "/lobbies";
+
     public class LobbyException extends Exception {
         public LobbyException(String lobbyID, String message) {
             super("Lobby " + lobbyID + ": " + message);
@@ -28,6 +32,7 @@ public class LobbyService {
 
         var lobby = new Lobby(player);
         lobbyRepo.save(lobby);
+        sendLobbiesMessage(lobby, false);
 
         return lobby;
     }
@@ -37,7 +42,8 @@ public class LobbyService {
     }
 
     public Lobby Join(String lobbyID, String player) throws LobbyException {
-        var lobby = lobbyRepo.findById(lobbyID).orElseThrow(() -> new LobbyException(lobbyID, "Doesn't exist"));
+        var lobby = lobbyRepo.findById(lobbyID)
+                .orElseThrow(() -> new LobbyException(lobbyID, "Doesn't exist"));
         if (lobby.getPlayer2() != null) {
             if ((!lobby.getPlayer2().equals(player) && !lobby.getPlayer1().equals(player))) {
                 throw new LobbyException(lobbyID, "The room is full");
@@ -47,7 +53,9 @@ public class LobbyService {
             if (joinedLobby.isPresent()) {
                 try {
                     Quit(player);
-                } catch (Exception e) { /** Doesn't matter */ }
+                } catch (Exception e) {
+                    /** Doesn't matter */
+                }
             }
 
             lobby.Join(player);
@@ -99,6 +107,7 @@ public class LobbyService {
         lobby.Quit(player);
 
         if (lobby.getPlayer1() == null && lobby.getPlayer2() == null) {
+            sendLobbiesMessage(lobby, true);
             lobbyRepo.delete(lobby);
             return;
         }
@@ -107,8 +116,21 @@ public class LobbyService {
     }
 
     public Lobby getPlayerLobby(String player) throws LobbyException {
-        var lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
+        var lobby = lobbyRepo.findByPlayer(player)
+                .orElseThrow(() -> new LobbyException("unknown", "Player hasn't join any lobby"));
         return lobby;
+    }
+
+    private void sendLobbiesMessage(Lobby lobby, boolean forRemoval) {
+        LobbiesMessage message = new LobbiesMessage();
+        message.setLobby(new LobbyDto(lobby));
+        if (forRemoval)
+            message.setType(LobbiesMessage.Type.REMOVE);
+        else
+            message.setType(LobbiesMessage.Type.CREATE);
+
+        simpMessagingTemplate.convertAndSend(LOBBY_WS_URL, message);
+
     }
 
     private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player) {
@@ -129,6 +151,6 @@ public class LobbyService {
     }
 
     private String createLobbyEndpoint(String lobbyID) {
-        return "/lobbies/" + lobbyID;
+        return LOBBY_WS_URL + lobbyID;
     }
 }

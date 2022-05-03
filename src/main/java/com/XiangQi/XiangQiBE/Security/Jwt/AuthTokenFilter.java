@@ -53,6 +53,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
   private String parseJwt(HttpServletRequest request) {
     String jwt = jwtUtils.getJwtFromHeader(request);
+    if (jwt == null || jwt.isBlank()) {
+      jwt = jwtUtils.getJwtFromParam(request);
+    }
+
     return jwt;
   }
 }
