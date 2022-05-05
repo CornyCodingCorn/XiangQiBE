@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,10 +69,16 @@ public class LobbyController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject<LobbyDto>> ready() {
+    @PutMapping("/ready")
+    public ResponseEntity<ResponseObject<LobbyDto>> ready(@SessionAttribute(name = SessionAttrs.Username) String username) {
+        try {
+            Lobby lobby = lobbyService.Ready(username);
 
-        return null;
+            return ResponseObject.Response(HttpStatus.OK, "Player " + username + " readied in lobby " + lobby.getId(), new LobbyDto(lobby));
+        }
+        catch(Exception e) {
+            return ResponseObject.Response(HttpStatus.FORBIDDEN, e.getMessage(), null);
+        }
     }
 
     @MessageMapping("/lobbies/moves")

@@ -6,6 +6,7 @@ import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
+import org.springframework.boot.configurationprocessor.json.JSONStringer;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -66,7 +67,13 @@ public class LobbyService {
             lobby.Join(player);
         }
 
+        // If 2 player slot is full then send the message to delete the lobby client list
+        if (lobby.getPlayer1() != null && lobby.getPlayer2() != null) {
+            sendLobbiesMessage(lobby, player, true);
+        }
+
         lobbyRepo.save(lobby);
+        sendMessageToLobby(lobbyID, LobbyMessage.Type.JOIN, player, lobby);
         return lobby;
     }
 
@@ -93,15 +100,14 @@ public class LobbyService {
     public Lobby Ready(String player) throws LobbyException {
         var lobby = getPlayerLobby(player);
 
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player);
-
         lobby.Ready(player);
         lobbyRepo.save(lobby);
         if (lobby.isPlayer1Ready() && lobby.isPlayer2Ready()) {
             lobby.Start();
-            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.START, player);
+            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.START, player, lobby);
         }
 
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player, lobby);
         return lobby;
     }
 
@@ -116,7 +122,9 @@ public class LobbyService {
             return;
         }
 
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player);
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player, lobby);
+        // If a player quit and it doesn't get delete which mean the other player is still there the lobby will reopen
+        sendLobbiesMessage(lobby, player, false);
         lobbyRepo.save(lobby);
     }
 
@@ -139,10 +147,11 @@ public class LobbyService {
 
     }
 
-    private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player) {
+    private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player, Lobby lobby) {
         LobbyMessage message = new LobbyMessage();
         message.setType(type);
         message.setPlayer(player);
+        message.setLobby(new LobbyDto(lobby));
 
         simpMessagingTemplate.convertAndSend(createLobbyEndpoint(lobbyID), message);
     }
@@ -157,6 +166,6 @@ public class LobbyService {
     }
 
     private String createLobbyEndpoint(String lobbyID) {
-        return LOBBY_WS_URL + lobbyID;
+        return LOBBY_WS_URL + "/" + lobbyID;
     }
 }

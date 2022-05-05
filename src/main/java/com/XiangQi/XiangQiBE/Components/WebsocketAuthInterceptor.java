@@ -33,6 +33,7 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        
         String player = "";
         String destination = accessor.getDestination();;
 

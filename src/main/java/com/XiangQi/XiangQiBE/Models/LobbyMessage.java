@@ -1,5 +1,6 @@
 package com.XiangQi.XiangQiBE.Models;
 
+import com.XiangQi.XiangQiBE.dto.LobbyDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ public class LobbyMessage {
     }
 
     private String player;
+    private LobbyDto lobby;
     private String data;
     private Type type;
 }

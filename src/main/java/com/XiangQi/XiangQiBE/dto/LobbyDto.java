@@ -14,16 +14,22 @@ public class LobbyDto {
     private String player1;
     private String player2;
 
+    private boolean player2Ready;
+    private boolean player1Ready;
+
     private String blackPlayer;
     private String redPlayer;
 
     public LobbyDto(Lobby lobby) {
         id = lobby.getId();
-
+        
         player1 = lobby.getPlayer1();
         player2 = lobby.getPlayer2();
 
         blackPlayer = lobby.getBlackPlayer();
         redPlayer = lobby.getRedPlayer();
+
+        player1Ready = lobby.isPlayer1Ready();
+        player2Ready = lobby.isPlayer2Ready();
     }
 }
