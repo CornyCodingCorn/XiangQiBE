@@ -31,7 +31,7 @@ public class PlayerManager {
 
   public void addSession(String sessionID, String username) {
     wsSessionMap.put(sessionID, username);
-    log.info("Player " + username + "connect with session: " + sessionID);
+    log.info("Player " + username + " connect with sessionID: " + sessionID);
   }
 
   public void removeSession(String sessionID) {
