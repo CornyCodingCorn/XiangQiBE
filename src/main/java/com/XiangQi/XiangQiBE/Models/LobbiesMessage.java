@@ -18,5 +18,6 @@ public class LobbiesMessage {
   }
 
   private LobbyDto lobby;
+  private String player;
   private Type type;
 }

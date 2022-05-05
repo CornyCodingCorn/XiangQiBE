@@ -2,7 +2,7 @@ package com.XiangQi.XiangQiBE.Controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import com.XiangQi.XiangQiBE.Configurations.SessionAttrs;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
@@ -14,17 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 @RestController
 @CrossOrigin
@@ -36,9 +36,8 @@ public class LobbyController {
     private LobbyService lobbyService;
 
     @PostMapping
-    public ResponseEntity<ResponseObject<LobbyDto>> createLobby(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken) {
+    public ResponseEntity<ResponseObject<LobbyDto>> createLobby(@SessionAttribute(name = SessionAttrs.Username) String username) {
         try {
-            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
             Lobby lobby = lobbyService.Create(username);
 
             return ResponseObject.Response(HttpStatus.OK, "Room created", new LobbyDto(lobby));
@@ -60,9 +59,8 @@ public class LobbyController {
     }
 
     @PutMapping
-    public ResponseEntity<ResponseObject<LobbyDto>> joinLobby(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken, @RequestParam("id") String lobbyID) {
+    public ResponseEntity<ResponseObject<LobbyDto>> joinLobby(@SessionAttribute(name = SessionAttrs.Username) String username, @RequestParam("id") String lobbyID) {
         try {
-            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
             Lobby lobby = lobbyService.Join(lobbyID, username);
 
             return ResponseObject.Response(HttpStatus.OK, "Joined room " + lobbyID, new LobbyDto(lobby));
@@ -93,9 +91,9 @@ public class LobbyController {
     }
 
     @MessageMapping("/lobbies")
-    public ResponseEntity<ResponseObject<Object>> sendLobbyMessage(@Header(name = "${xiangqibe.app.jwt-header= bearer}") String jwt, Message<LobbyMessage> message) {
+    public ResponseEntity<ResponseObject<Object>> sendLobbyMessage(@SessionAttribute(name = SessionAttrs.Username) String username, Message<LobbyMessage> message) {
         try {
-            String player = jwtUtils.getUserNameFromJwtToken(jwt);
+            String player = username;
             switch(message.getPayload().getType()) {
                 case JOIN:
                 lobbyService.Create(player);
@@ -108,6 +106,8 @@ public class LobbyController {
                 break;
                 case MOVE:
                 lobbyService.Move(player, message.getPayload().getData());
+                break;
+                default:
                 break;
             }
 

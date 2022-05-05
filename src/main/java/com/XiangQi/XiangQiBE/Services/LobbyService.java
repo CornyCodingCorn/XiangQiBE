@@ -32,7 +32,7 @@ public class LobbyService {
 
         var lobby = new Lobby(player);
         lobbyRepo.save(lobby);
-        sendLobbiesMessage(lobby, false);
+        sendLobbiesMessage(lobby, player, false);
 
         return lobby;
     }
@@ -44,6 +44,11 @@ public class LobbyService {
     public Lobby Join(String lobbyID, String player) throws LobbyException {
         var lobby = lobbyRepo.findById(lobbyID)
                 .orElseThrow(() -> new LobbyException(lobbyID, "Doesn't exist"));
+        
+        if (lobby.getPlayer1().equals(player)) {
+            return lobby;
+        }
+                
         if (lobby.getPlayer2() != null) {
             if ((!lobby.getPlayer2().equals(player) && !lobby.getPlayer1().equals(player))) {
                 throw new LobbyException(lobbyID, "The room is full");
@@ -102,16 +107,16 @@ public class LobbyService {
 
     public void Quit(String player) throws LobbyException {
         var lobby = getPlayerLobby(player);
-
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player);
         lobby.Quit(player);
 
+        // If lobby is remove then no need to post disconnect to player
         if (lobby.getPlayer1() == null && lobby.getPlayer2() == null) {
-            sendLobbiesMessage(lobby, true);
+            sendLobbiesMessage(lobby, player, true);
             lobbyRepo.delete(lobby);
             return;
         }
 
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player);
         lobbyRepo.save(lobby);
     }
 
@@ -121,9 +126,10 @@ public class LobbyService {
         return lobby;
     }
 
-    private void sendLobbiesMessage(Lobby lobby, boolean forRemoval) {
+    private void sendLobbiesMessage(Lobby lobby, String player, boolean forRemoval) {
         LobbiesMessage message = new LobbiesMessage();
         message.setLobby(new LobbyDto(lobby));
+        message.setPlayer(player);
         if (forRemoval)
             message.setType(LobbiesMessage.Type.REMOVE);
         else

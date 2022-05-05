@@ -24,8 +24,8 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // lobbies/{id}/move or lobbies/{id}
         var origins = corseConfig.allowedOrigins.toArray(new String[0]);
-        registry.addEndpoint("/lobbies").setAllowedOrigins(origins);
-        registry.addEndpoint("/lobbies").setAllowedOrigins(origins).withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins(origins);
+        registry.addEndpoint("/ws").setAllowedOrigins(origins).withSockJS();
     }
 
     @Override

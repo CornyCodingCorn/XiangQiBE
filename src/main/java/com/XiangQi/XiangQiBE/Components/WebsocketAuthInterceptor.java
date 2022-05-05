@@ -1,21 +1,21 @@
 package com.XiangQi.XiangQiBE.Components;
 
+import java.util.ArrayList;
+import java.util.List;
+import com.XiangQi.XiangQiBE.Configurations.SessionAttrs;
+import com.XiangQi.XiangQiBE.Events.WebsocketEvent;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
-import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 
 @Component
-@Slf4j
 public class WebsocketAuthInterceptor implements ChannelInterceptor {
     public class WebsocketAuthError extends Error {
         public WebsocketAuthError(String message) {
@@ -25,86 +25,63 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
 
     @Autowired
     private LobbyRepo lobbyRepo;
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Override
-    public Message<?> postReceive(Message<?> message, MessageChannel channel) {
-        var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        var jwtStr = (String) accessor.getHeader("${xiangqibe.app.jwt-header}");
-        String player = "";
-
-        // Check if player is authenticated, then set the header for player name 
-        player = getPlayerName(jwtStr);
-        accessor.setHeader("username", player);
-
-        if (StompCommand.SUBSCRIBE == accessor.getCommand()) {
-            var destination = accessor.getDestination();
-            log.info(player + " subscribed to " + destination);
-        }
-
-        if (StompCommand.UNSUBSCRIBE == accessor.getCommand()) {
-            var destination = accessor.getDestination();
-            log.info(player + " unsubscribed to " + destination);
-        }
-
-        if (StompCommand.SEND == accessor.getCommand()) {
-            var destination = accessor.getDestination();
-            if (destination.isBlank())
-                throw new WebsocketAuthError("The destination can't be blank");
-
-            var movePattern = "/lobbies/+[a-zA-Z0-9-]+";
-            if (destination.matches(movePattern)) {
-                String[] arr = destination.split("/");
-                String lobbyID = "";
-
-                // Get requested subscribe lobbyID
-                for (int i = 0; i < arr.length; i++) {
-                    if (!arr[i].isBlank()) {
-                        lobbyID = arr[i + 1];
-                        break;
-                    }
-                }
-
-                // Get player lobby
-                if (player.isBlank()) {
-                    player = getPlayerName(jwtStr);
-                }
-                Lobby lobby = null;
-                try {
-                    lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new Exception());
-                } catch (Exception e) {
-                    throw new WebsocketAuthError("Player haven't join any lobby");
-                }
-
-                // Check if the lobby that the player in is the same as the requested lobby
-                if (!lobby.getId().equals(lobbyID)) {
-                    throw new WebsocketAuthError("Player doesn't have authority in this lobby");
-                }
-            } else {
-                throw new WebsocketAuthError("The destination doesn't exist");
-            }
-        }
-
-        return message;
-    }
+    @Getter
+    private List<WebsocketEvent> onConnect = new ArrayList<WebsocketEvent>();
+    @Getter
+    private List<WebsocketEvent> onDisconnect = new ArrayList<WebsocketEvent>();
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        var jwtStr = (String) accessor.getHeader("${xiangqibe.app.jwt-header}");
         String player = "";
+        String destination = accessor.getDestination();;
 
-        
+        // Check if player is authenticated, then set the header for player name
+        var attribute = accessor.getSessionAttributes();
+        if (accessor.isMutable()) {
+            player = (String) attribute.get(SessionAttrs.Username);
+            accessor.setHeader("username", player);
+        }
+
+        switch (accessor.getCommand()) {
+            case CONNECT:
+                // Set attribute for the rest of the session.
+                attribute.put(SessionAttrs.Username, accessor.getUser().getName());
+                accessor.setSessionAttributes(attribute);
+
+                for (var eventListener : onConnect) {
+                    eventListener.invoke(accessor);
+                }
+                break;
+            case SUBSCRIBE:
+                if (destination.isBlank()) {
+                    throw new WebsocketAuthError("The subscribing to des can't be blank");
+                }
+
+                // Only if player is subscribing to a specific lobby message broker
+                var moveDesPattern = "/lobbies/+[a-zA-Z0-9-]+";
+                if (destination.matches(moveDesPattern)) {
+                    String[] arr = destination.split("/");
+                    String lobbyID = arr[2];
+                    Error error = new WebsocketAuthError(
+                            "Can't subscribe to a lobby that you didn't join");
+
+                    // If player didn't join any lobby or request to subscribe to another lobby
+                    Lobby lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> error);
+                    if (!lobby.getId().equals(lobbyID)) {
+                        throw error;
+                    }
+                }
+                break;
+            case DISCONNECT:
+                for (var eventListener : onDisconnect) {
+                    eventListener.invoke(accessor);
+                }
+                break;
+            default:
+                break;
+        }
 
         return message;
-    }
-
-    private String getPlayerName(String jwt) throws WebsocketAuthError {
-        try {
-            return jwtUtils.getUserNameFromJwtToken(jwt);
-        } catch (JWTVerificationException e) {
-            throw new WebsocketAuthError("Player haven't join any lobby");
-        }
     }
 }

@@ -1,6 +1,7 @@
 package com.XiangQi.XiangQiBE.Controllers;
 
 import javax.validation.Valid;
+import com.XiangQi.XiangQiBE.Configurations.SessionAttrs;
 import com.XiangQi.XiangQiBE.Models.Player;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -36,9 +39,8 @@ public class AuthorizationController {
     private JwtService jwtService;
 
     @GetMapping()
-    public ResponseEntity<ResponseObject<PlayerDto>> getPlayerInfo(@RequestHeader(name = "${xiangqibe.app.jwt-header}") String jwtToken) {
+    public ResponseEntity<ResponseObject<PlayerDto>> getPlayerInfo(@SessionAttribute(name = SessionAttrs.Username) String username) {
         try {
-            String username = jwtUtils.getUserNameFromJwtToken(jwtToken);
             Player player = playerService.get(username);
             var response = ResponseEntity.status(HttpStatus.OK)
                     .body(new ResponseObject<PlayerDto>(HttpStatus.OK,
