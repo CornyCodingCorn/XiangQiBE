@@ -36,6 +36,8 @@ public class PlayerManager {
 
   public void removeSession(String sessionID) {
     String player = wsSessionMap.get(sessionID);
+    log.info("Player " + player + " disconnect with sessionID: " + sessionID);
+
     if (player == null)
       return;
 

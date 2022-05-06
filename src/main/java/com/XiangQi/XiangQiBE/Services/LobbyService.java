@@ -1,6 +1,7 @@
 package com.XiangQi.XiangQiBE.Services;
 
 import java.util.List;
+import com.XiangQi.XiangQiBE.Components.Board;
 import com.XiangQi.XiangQiBE.Models.LobbiesMessage;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
@@ -24,6 +25,7 @@ public class LobbyService {
 
     private LobbyRepo lobbyRepo;
     private SimpMessagingTemplate simpMessagingTemplate;
+    private Board board;
 
     public Lobby Create(String player) throws LobbyException {
         var joinedLobby = lobbyRepo.findByPlayer(player);
@@ -91,7 +93,14 @@ public class LobbyService {
             throw new LobbyException(lobby.getId(), "This isn't red's turn");
         }
 
-        // If valid
+        if (board.IsMoveValid(lobby.getBoard(), move)) {
+            String newBoard= board.UpdateBoard(lobby.getBoard(), move);
+            lobby.setRedTurn(!lobby.isRedTurn());
+            lobby.setBoard(newBoard);
+        } else {
+            throw new LobbyException(lobby.getId(), "Move " + move + " is not possible");
+        }
+
         sendMessageToLobbyMove(lobby.getId(), player, move);
         lobbyRepo.save(lobby);
         return lobby;
@@ -101,13 +110,13 @@ public class LobbyService {
         var lobby = getPlayerLobby(player);
 
         lobby.Ready(player);
-        lobbyRepo.save(lobby);
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player, lobby);
         if (lobby.isPlayer1Ready() && lobby.isPlayer2Ready()) {
             lobby.Start();
             sendMessageToLobby(lobby.getId(), LobbyMessage.Type.START, player, lobby);
         }
+        lobbyRepo.save(lobby);
 
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player, lobby);
         return lobby;
     }
 

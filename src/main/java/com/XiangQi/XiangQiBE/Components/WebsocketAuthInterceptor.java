@@ -44,6 +44,8 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
             accessor.setHeader("username", player);
         }
 
+        if (accessor.isHeartbeat()) return message;
+        
         switch (accessor.getCommand()) {
             case CONNECT:
                 // Set attribute for the rest of the session.

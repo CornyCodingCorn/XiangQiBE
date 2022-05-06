@@ -71,7 +71,7 @@ public class Lobby {
 
     @Setter
     @NotBlank
-    private boolean isRedTurn;
+    private boolean isRedTurn = true;
 
     @NotBlank
     @Setter
