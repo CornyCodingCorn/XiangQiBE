@@ -41,7 +41,7 @@ public class LobbyService {
     }
 
     public List<Lobby> GetAll() {
-        return lobbyRepo.findAll();
+        return lobbyRepo.findEmpty();
     }
 
     public Lobby Join(String lobbyID, String player) throws LobbyException {
