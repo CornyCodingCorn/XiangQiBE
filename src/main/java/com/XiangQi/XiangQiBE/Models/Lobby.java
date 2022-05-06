@@ -115,7 +115,7 @@ public class Lobby {
         if (player1.equals(player)) {
             player1Ready = !player1Ready;
         } 
-        if (player2.equals(player)) {
+        else if (player2 != null && player2.equals(player)) {
             player2Ready = !player2Ready;
         }
     }

@@ -34,7 +34,7 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
         registry.setApplicationDestinationPrefixes("/ws");
 
         // Brokers to subscribe to
-        registry.enableSimpleBroker("/lobbies");
+        registry.enableSimpleBroker("/lobbies", "/users");
     }
 
     @Override

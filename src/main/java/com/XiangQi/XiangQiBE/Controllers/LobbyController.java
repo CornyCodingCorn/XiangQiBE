@@ -1,5 +1,6 @@
 package com.XiangQi.XiangQiBE.Controllers;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import com.XiangQi.XiangQiBE.Configurations.SessionAttrs;
@@ -8,16 +9,18 @@ import com.XiangQi.XiangQiBE.Models.LobbyMessage;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
 import com.XiangQi.XiangQiBE.Services.LobbyService;
+import com.XiangQi.XiangQiBE.Services.ServerMessageService;
 import com.XiangQi.XiangQiBE.Services.LobbyService.LobbyException;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,9 +33,9 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @RequestMapping("/api/v1/lobbies")
 public class LobbyController {
     @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
     private LobbyService lobbyService;
+    @Autowired
+    private ServerMessageService serverMessageService;
 
     @PostMapping
     public ResponseEntity<ResponseObject<LobbyDto>> createLobby(@SessionAttribute(name = SessionAttrs.Username) String username) {
@@ -81,28 +84,13 @@ public class LobbyController {
         }
     }
 
-    @MessageMapping("/lobbies/moves")
-    public ResponseEntity<ResponseObject<Object>> movePiece(@Header(name = "${xiangqibe.app.jwt-header= bearer}") String jwt, Message<String> message) {
+    @MessageMapping("/lobbies/{id}")
+    public void sendLobbyMessage(Message<LobbyMessage> message, @AuthenticationPrincipal Principal principal) {
+        ResponseObject<LobbyMessage> resObj = null;
         try {
-            String player = jwtUtils.getUserNameFromJwtToken(jwt);
-            lobbyService.Move(player, message.getPayload());
-
-            return ResponseObject.Response(HttpStatus.OK, "Move accepted", message.getPayload());
-        } catch (LobbyException e) {
-            return ResponseObject.Response(HttpStatus.FORBIDDEN, e.getMessage(), message.getPayload());
-        } catch (Exception e) {
-            return ResponseObject.Response(HttpStatus.OK, e.getMessage(), message.getPayload());
-        }
-    }
-
-    @MessageMapping("/lobbies")
-    public ResponseEntity<ResponseObject<Object>> sendLobbyMessage(@SessionAttribute(name = SessionAttrs.Username) String username, Message<LobbyMessage> message) {
-        try {
-            String player = username;
+            String player = principal.getName();
+            var exception = lobbyService.new LobbyException("", "The message of type " + message.getPayload().getType() + " doesn't belong to types that allow to send by client");
             switch(message.getPayload().getType()) {
-                case JOIN:
-                lobbyService.Create(player);
-                break;
                 case DISCONNECT:
                 lobbyService.Quit(player);
                 break;
@@ -113,14 +101,18 @@ public class LobbyController {
                 lobbyService.Move(player, message.getPayload().getData());
                 break;
                 default:
-                break;
+                throw exception;
             }
 
-            return ResponseObject.Response(HttpStatus.OK, "Message accepted", message.getPayload());
+            resObj = new ResponseObject<LobbyMessage>(HttpStatus.OK, "Message accepted", message.getPayload());
         } catch (LobbyException e) {
-            return ResponseObject.Response(HttpStatus.FORBIDDEN, e.getMessage(), message.getPayload());
+            resObj = new ResponseObject<LobbyMessage>(HttpStatus.FORBIDDEN, e.getMessage(), message.getPayload());
         } catch (Exception e) {
-            return ResponseObject.Response(HttpStatus.OK, e.getMessage(), message.getPayload());
+            resObj = new ResponseObject<LobbyMessage>(HttpStatus.BAD_REQUEST, e.getMessage(), message.getPayload());
+        } finally {
+            if (resObj != null) {
+                serverMessageService.SendResponse(principal.getName(), resObj);
+            }
         }
     }
 }

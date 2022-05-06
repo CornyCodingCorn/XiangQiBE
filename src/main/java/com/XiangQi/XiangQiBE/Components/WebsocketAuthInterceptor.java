@@ -73,6 +73,20 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
                         throw error;
                     }
                 }
+
+                var userDesPattern = "/users/+[a-zA-Z0-9-]+";
+                if(destination.matches(userDesPattern)) {
+                    String[] arr = destination.split("/");
+                    String username = arr[2];
+
+                    if (!player.equals(username)) {
+                        throw new WebsocketAuthError("Can't subscribe to another player message broker");
+                    }
+                }
+
+                break;
+            case SEND:
+                
                 break;
             case DISCONNECT:
                 for (var eventListener : onDisconnect) {
