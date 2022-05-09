@@ -94,14 +94,36 @@ public class LobbyService {
         }
 
         if (board.IsMoveValid(lobby.getBoard(), move)) {
+            lobby.getMoves().add(move + " " + lobby.getBoard());
             String newBoard= board.UpdateBoard(lobby.getBoard(), move);
             lobby.setRedTurn(!lobby.isRedTurn());
             lobby.setBoard(newBoard);
+
+            // Just send the move message first
+            sendMessageToLobbyMove(lobby.getId(), player, move);
+            var result = board.CheckResult(lobby.getBoard(), lobby.isRedTurn());
+            switch (result) {
+                case CONTINUE:
+                // Do nothing and just proceed with the game.
+                break;
+                case RED_WIN:
+                // Send a win message with red player's name
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getRedPlayer(), lobby);
+                break;
+                case BLACK_WIN:
+                // Same with red win
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getBlackPlayer(), lobby);
+                break;
+                case DRAW:
+                // Send a draw message with the name of who ever send the last move message
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DRAW, player, lobby);
+                break;
+            }
         } else {
             throw new LobbyException(lobby.getId(), "Move " + move + " is not possible");
         }
 
-        sendMessageToLobbyMove(lobby.getId(), player, move);
+
         lobbyRepo.save(lobby);
         return lobby;
     }
@@ -132,8 +154,15 @@ public class LobbyService {
         }
 
         sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player, lobby);
-        // If a player quit and it doesn't get delete which mean the other player is still there the lobby will reopen
-        sendLobbiesMessage(lobby, player, false);
+        if (lobby.getState() == Lobby.State.PLAYING) {
+            // If playing then player 1 win
+            lobby.setState(Lobby.State.FINISHED);
+            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getPlayer1(), lobby);            
+        } else {
+            // If a player quit and it doesn't get delete which mean the other player is still there the lobby will reopen
+            sendLobbiesMessage(lobby, player, false);
+        }
+
         lobbyRepo.save(lobby);
     }
 

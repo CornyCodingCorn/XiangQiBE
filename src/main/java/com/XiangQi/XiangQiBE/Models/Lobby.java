@@ -65,8 +65,10 @@ public class Lobby {
     @NotBlank
     @Setter
     private String board = BOARD;
+    
     @NotBlank
     @Setter
+    // Move will be moveStr + board separated by a space;
     private List<String> moves;
 
     @Setter
@@ -139,6 +141,12 @@ public class Lobby {
 
             player2 = null;
             player2Ready = false;
+
+            if (state == State.WAITING) {
+                // If the lobby is in waiting state then player 2 will become red player
+                redPlayer = player2;
+                blackPlayer = null;
+            }
         }
     }
 }

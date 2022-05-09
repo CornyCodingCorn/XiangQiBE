@@ -14,7 +14,9 @@ public class LobbyMessage {
         DISCONNECT(2),
         CHANGE_READY(3),
         MOVE(4),
-        START(5);
+        START(5),
+        WIN(6),
+        DRAW(7);
 
         @Getter
         private int value;
