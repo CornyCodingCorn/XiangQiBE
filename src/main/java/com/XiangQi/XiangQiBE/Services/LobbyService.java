@@ -5,6 +5,7 @@ import com.XiangQi.XiangQiBE.Components.Board;
 import com.XiangQi.XiangQiBE.Models.LobbiesMessage;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
+import com.XiangQi.XiangQiBE.Models.LobbyMessage.EndType;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
 import org.springframework.boot.configurationprocessor.json.JSONStringer;
@@ -75,7 +76,7 @@ public class LobbyService {
         }
 
         lobbyRepo.save(lobby);
-        sendMessageToLobby(lobbyID, LobbyMessage.Type.JOIN, player, lobby);
+        sendMessageToLobby(lobbyID, LobbyMessage.Type.JOIN, player, lobby, "");
         return lobby;
     }
 
@@ -99,24 +100,22 @@ public class LobbyService {
             lobby.setRedTurn(!lobby.isRedTurn());
             lobby.setBoard(newBoard);
 
-            // Just send the move message first
-            sendMessageToLobbyMove(lobby.getId(), player, move);
             var result = board.CheckResult(lobby.getBoard(), lobby.isRedTurn());
             switch (result) {
                 case CONTINUE:
-                // Do nothing and just proceed with the game.
+                sendMessageToLobbyMove(lobby.getId(), player, move);                
                 break;
                 case RED_WIN:
                 // Send a win message with red player's name
-                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getRedPlayer(), lobby);
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, lobby.getRedPlayer(), lobby,  LobbyMessage.EndType.constructData(EndType.WIN, move));
                 break;
                 case BLACK_WIN:
                 // Same with red win
-                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getBlackPlayer(), lobby);
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, lobby.getBlackPlayer(), lobby, LobbyMessage.EndType.constructData(EndType.WIN, move));
                 break;
                 case DRAW:
                 // Send a draw message with the name of who ever send the last move message
-                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DRAW, player, lobby);
+                sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, player, lobby, "DRAW " + move);
                 break;
             }
         } else {
@@ -132,10 +131,10 @@ public class LobbyService {
         var lobby = getPlayerLobby(player);
 
         lobby.Ready(player);
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player, lobby);
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_READY, player, lobby, "");
         if (lobby.isPlayer1Ready() && lobby.isPlayer2Ready()) {
             lobby.Start();
-            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.START, player, lobby);
+            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.START, player, lobby, "");
         }
         lobbyRepo.save(lobby);
 
@@ -153,11 +152,11 @@ public class LobbyService {
             return;
         }
 
-        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player, lobby);
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.DISCONNECT, player, lobby, "");
         if (lobby.getState() == Lobby.State.PLAYING) {
             // If playing then player 1 win
             lobby.setState(Lobby.State.FINISHED);
-            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.WIN, lobby.getPlayer1(), lobby);            
+            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, lobby.getPlayer1(), lobby, LobbyMessage.EndType.WIN.getValue()); 
         } else {
             // If a player quit and it doesn't get delete which mean the other player is still there the lobby will reopen
             sendLobbiesMessage(lobby, player, false);
@@ -185,11 +184,12 @@ public class LobbyService {
 
     }
 
-    private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player, Lobby lobby) {
+    private void sendMessageToLobby(String lobbyID, LobbyMessage.Type type, String player, Lobby lobby, String data) {
         LobbyMessage message = new LobbyMessage();
         message.setType(type);
         message.setPlayer(player);
         message.setLobby(new LobbyDto(lobby));
+        message.setData(data);
 
         simpMessagingTemplate.convertAndSend(createLobbyEndpoint(lobbyID), message);
     }

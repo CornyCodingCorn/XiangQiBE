@@ -15,17 +15,17 @@ import lombok.Setter;
 @Getter
 @CompoundIndex(unique = true, def = "{'player1: 1', 'player2': 1}")
 public class Lobby {
-    private static final String BOARD = ""
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000"
-    + "000000000";
+    private static final String BOARD =
+    "rheakaehr" +
+    "000000000" +
+    "0c00000c0" +
+    "p0p0p0p0p" +
+    "000000000" +
+    "000000000" +
+    "P0P0P0P0P" +
+    "0C00000C0" +
+    "000000000" +
+    "RHEAKAEHR";
 
     @AllArgsConstructor
     public enum State {

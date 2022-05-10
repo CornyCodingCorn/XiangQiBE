@@ -20,6 +20,8 @@ public class LobbyDto {
     private String blackPlayer;
     private String redPlayer;
 
+    private String board;
+
     public LobbyDto(Lobby lobby) {
         id = lobby.getId();
         
@@ -31,5 +33,7 @@ public class LobbyDto {
 
         player1Ready = lobby.isPlayer1Ready();
         player2Ready = lobby.isPlayer2Ready();
+
+        board = lobby.getBoard();
     }
 }

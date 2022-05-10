@@ -15,15 +15,32 @@ public class LobbyMessage {
         CHANGE_READY(3),
         MOVE(4),
         START(5),
-        WIN(6),
-        DRAW(7);
+        END(6);
 
         @Getter
         private int value;
     }
 
+    @AllArgsConstructor
+    public enum EndType {
+        WIN("WIN"),
+        DRAW("DRAW");
+
+        @Getter
+        private String value;
+        public static String constructData(EndType type, String moveStr) {
+            return type + " " + moveStr;
+        }
+    }
+
     private String player;
     private LobbyDto lobby;
+    /**
+     * Could be anything depending on the message type
+     * `${WIN or DRAW} ${lastMoveStr or "" depending on if it happen by player quitting or by move}` if END
+     * moveStr if MOVE
+     * noting if CHANGE_READY, DISCONNECT, JOIN, START
+     */
     private String data;
     private Type type;
 }
