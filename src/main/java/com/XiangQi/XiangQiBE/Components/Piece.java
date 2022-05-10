@@ -75,6 +75,10 @@ public class Piece {
 		return charString == charString.toUpperCase();
 	}
 
+	public static boolean isPieceRed(String piece) {
+		return piece == piece.toUpperCase();
+	}
+
 	//public static getPieceObject(board: string, x: number, y: number): Piece 
 	public static Piece getPieceObject(String board, int index) {
 		int posX = index % Board.BOARD_COL;

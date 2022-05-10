@@ -2,7 +2,6 @@ package com.XiangQi.XiangQiBE.Components;
 
 import java.util.Vector;
 
-import com.XiangQi.XiangQiBE.Components.Piece;
 import com.XiangQi.XiangQiBE.Components.Piece.PieceType;
 import com.XiangQi.XiangQiBE.utils.StringUtils;
 
@@ -26,9 +25,12 @@ public class Board {
     private int value;
   }
 
+	// feels like somthing wrong :v
   public boolean IsMoveValid(String board, String move) {
-    
-    return true;
+		setBoard(board);
+		boolean isRed = Piece.isPieceRed(String.valueOf(move.charAt(2)));
+
+    return isKingChecked(this, isRed, move);
   }
 
   public String UpdateBoard(String board, String move) {
@@ -53,13 +55,13 @@ public class Board {
 	public Piece blackKing= new Piece();
 	public Piece redKing = new Piece();
 
-  private static Board _instance = null;
-	public static Board getInstance() {
-		if (Board._instance == null) {
-			Board._instance = new Board();
-		}
-		return Board._instance;
-	}
+  // private static Board _instance = null;
+	// public static Board getInstance() {
+	// 	if (Board._instance == null) {
+	// 		Board._instance = new Board();
+	// 	}
+	// 	return Board._instance;
+	// }
 
   protected String _board = null;
   public void setBoard(String _board) {
@@ -160,7 +162,7 @@ public class Board {
     this.redKing = new Piece();
   }
 
-  public static String generateRawMove(
+  public String generateRawMove(
 		PieceType type,
 		int x,
 		int y,
@@ -171,7 +173,7 @@ public class Board {
 		Piece piece;
 		String boardPos;
     if (board == null)
-      boardPos = getInstance().getBoard();
+      boardPos = getBoard();
     else
       boardPos = board;
 
@@ -205,16 +207,16 @@ public class Board {
 		//return func ? func(board || this.getInstance().getBoard(), x, y, isRed) : "";
 	}
 
-  public static String generateMove(
+  public String generateMove(
 		PieceType type,
 		int x,
 		int y,
 		boolean isRed
 	) {
-		Board board = Board.getInstance().getInfoOfOneSide(!isRed);
+		Board board = getInfoOfOneSide(!isRed);
     board.removeAt(x, y);
 
-		String rawMove = Board.generateRawMove(type, x, y, isRed, null);
+		String rawMove = generateRawMove(type, x, y, isRed, null);
 		String[] arr = rawMove.split("/");
 		String result = "";
 
@@ -223,7 +225,7 @@ public class Board {
         break;
       String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
 
-      if (!Board.isKingChecked(board, isRed, fillInStr)) {
+      if (!isKingChecked(board, isRed, fillInStr)) {
         result += "${value}/";
       }
     }
@@ -238,11 +240,7 @@ public class Board {
 	 * @param fillPiece This piece fill get filled in if defined, the board will get changed then restored to normal
 	 * @returns
 	 */
-	public static boolean isKingChecked(
-		Board board,
-		boolean isRed,
-		String fillPiece
-	) {
+	public boolean isKingChecked(Board board, boolean isRed, String fillPiece) {
 		/*
     - Check the king in vertical line.
     - Check the other horses, canons, pawns, rooks
@@ -296,7 +294,7 @@ public class Board {
 			// If the enemy has the same x and y as the fill in piece then it mean that the enemy is going to be killed
 			if (value.location.x == fillX && value.location.y == fillY) continue;
 
-			String move = Board.generateRawMove(
+			String move = generateRawMove(
 				value.type,
 				value.location.x,
 				value.location.y,
