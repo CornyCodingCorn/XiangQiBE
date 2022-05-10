@@ -33,7 +33,7 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         var accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        
+
         String player = "";
         String destination = accessor.getDestination();;
 
@@ -44,8 +44,9 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
             accessor.setHeader("username", player);
         }
 
-        if (accessor.isHeartbeat()) return message;
-        
+        if (accessor.isHeartbeat())
+            return message;
+
         switch (accessor.getCommand()) {
             case CONNECT:
                 // Set attribute for the rest of the session.
@@ -77,18 +78,19 @@ public class WebsocketAuthInterceptor implements ChannelInterceptor {
                 }
 
                 var userDesPattern = "/users/+[a-zA-Z0-9-]+";
-                if(destination.matches(userDesPattern)) {
+                if (destination.matches(userDesPattern)) {
                     String[] arr = destination.split("/");
                     String username = arr[2];
 
                     if (!player.equals(username)) {
-                        throw new WebsocketAuthError("Can't subscribe to another player message broker");
+                        throw new WebsocketAuthError(
+                                "Can't subscribe to another player message broker");
                     }
                 }
 
                 break;
             case SEND:
-                
+
                 break;
             case DISCONNECT:
                 for (var eventListener : onDisconnect) {
