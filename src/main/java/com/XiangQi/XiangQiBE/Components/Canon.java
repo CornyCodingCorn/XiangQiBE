@@ -23,7 +23,7 @@ public class Canon extends Piece {
 		String[] arr = result.substring(0, result.length() - 1).split("/");
 		String last = arr[arr.length - 1];
 
-		if (last != null && last != "") {
+		if (last != null && !last.equals("")) {
 			x = Integer.parseInt(String.valueOf(last.charAt(0)));
 			y = Integer.parseInt(String.valueOf(last.charAt(1)));
 		}
@@ -38,7 +38,7 @@ public class Canon extends Piece {
 
 			// If the last piece of the returned result is a
 			// piece then add the last one to the result of this function.
-			if (last.length() >= 3 && String.valueOf(last.charAt(2)) != PieceType.Empty.getValue()) {
+			if (last.length() >= 3 && !String.valueOf(last.charAt(2)).equals(PieceType.Empty.getValue())) {
 				result += "${last}/";
 			}
 		}

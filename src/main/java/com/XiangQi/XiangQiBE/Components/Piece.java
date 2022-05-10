@@ -34,13 +34,13 @@ public class Piece {
     String charString = "";
     charString = piece;
 
-		if (charString == PieceType.Empty.getValue()) 
+		if (charString.equals(PieceType.Empty.getValue())) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase() == charString;
+			return charString.toUpperCase().equals(charString);
 		} else {
-			return charString.toLowerCase() == charString;
+			return charString.toLowerCase().equals(charString);
 		}
   }
 	//public isSameColor(board: string, isRed: boolean, x: number,	y: number,): boolean;
@@ -51,13 +51,13 @@ public class Piece {
 		else 
       charString = getPiece(info, x, y);
 
-		if (charString == PieceType.Empty.getValue()) 
+		if (charString.equals(PieceType.Empty.getValue())) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase() == charString;
+			return charString.toUpperCase().equals(charString);
 		} else {
-			return charString.toLowerCase() == charString;
+			return charString.toLowerCase().equals(charString);
 		}
 	}
 
@@ -72,11 +72,11 @@ public class Piece {
 
 	public static boolean isPieceRed(String board, int x, int y) {
 		String charString = getPiece(board, x, y);
-		return charString == charString.toUpperCase();
+		return charString.equals(charString.toUpperCase());
 	}
 
 	public static boolean isPieceRed(String piece) {
-		return piece == piece.toUpperCase();
+		return piece.equals(piece.toUpperCase());
 	}
 
 	//public static getPieceObject(board: string, x: number, y: number): Piece 
@@ -167,8 +167,8 @@ public class Piece {
 			isValid = isPosValid(x, y);
 			if (isValid) {
 				String str = generatePos(board, x, y, isRed);
-				anotherPiece = str == "" || String.valueOf(str.charAt(2)) != PieceType.Empty.getValue();
-				if (String.valueOf(str.charAt(2)) != PieceType.Empty.getValue()) {
+				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue());
+				if (!String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue())) {
 					if (allowKill) result += str;
 				} else {
 					result += str;
