@@ -33,13 +33,17 @@ public class Canon extends Piece {
 		if (isPosValid(x, y)) {
 			// If the next pos is valid that mean it was stopped by another piece.
 			String jump = generateGenericMove(board, x, y, isRed, deltaX, deltaY, true);
+
+			if (jump.equals(""))
+				return result;
+
 			arr = jump.substring(0, jump.length() - 1).split("/");
 			last = arr[arr.length - 1];
 
 			// If the last piece of the returned result is a
 			// piece then add the last one to the result of this function.
 			if (last.length() >= 3 && !String.valueOf(last.charAt(2)).equals(PieceType.Empty.getValue())) {
-				result += "${last}/";
+				result += last + "/";
 			}
 		}
 

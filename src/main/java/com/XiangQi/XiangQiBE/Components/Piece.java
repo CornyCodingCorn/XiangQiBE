@@ -62,6 +62,8 @@ public class Piece {
 	}
 
 	public static String getPiece(String board, int x, int y) {
+		if (!isPosValid(x, y))
+			return "";
 		return String.valueOf(board.charAt(x + y * Board.BOARD_COL));
 	}
 
@@ -106,7 +108,7 @@ public class Piece {
 		return result;
 	}
 
-	public boolean isPosValid(int x, int y) {
+	public static boolean isPosValid(int x, int y) {
 		return (
 			x >= 0 && x < Board.BOARD_COL && y >= 0 && y < Board.BOARD_ROW
 		);
@@ -121,7 +123,7 @@ public class Piece {
 		String result = "";
 		String piece = getPiece(board, x, y);
 		if (isPosValid(x, y) && !isSameColor(piece, isRed)) {
-			result = "${x}${y}${piece}/";
+			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
 
 		return result;
@@ -136,11 +138,8 @@ public class Piece {
 	) {
 		String result = "";
 		String piece = getPiece(board, x, y);
-		if (
-			isPosValid(x, y) &&
-			(!isSameColor(piece, isRed) || forceReturn)
-		) {
-			result = "${x}${y}${piece}/";
+		if (isPosValid(x, y) && (!isSameColor(piece, isRed) || forceReturn)) {
+			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
 
 		return result;
@@ -167,6 +166,10 @@ public class Piece {
 			isValid = isPosValid(x, y);
 			if (isValid) {
 				String str = generatePos(board, x, y, isRed);
+				
+				if (str.equals(""))
+					break;
+
 				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue());
 				if (!String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue())) {
 					if (allowKill) result += str;
