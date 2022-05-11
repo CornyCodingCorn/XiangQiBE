@@ -40,6 +40,23 @@ public class Board {
 	@Autowired
 	private Rook rook;
 
+	// feels like something wrong :v
+	public boolean IsMoveValid(String board, String move) {
+		setBoard(board);
+		boolean isRed = Piece.isPieceRed(String.valueOf(move.charAt(2)));
+
+		return isKingChecked(this, isRed, move);
+	}
+
+	public String UpdateBoard(String board, String move) {
+		return board;
+	}
+
+	public Result CheckResult(String board, boolean isRedTurn) {
+		// Check the result of the board game.
+		return Result.CONTINUE;
+	}
+
 	public static final int BOARD_COL = 9;
 	public static final int BOARD_ROW = 10;
 
@@ -136,7 +153,7 @@ public class Board {
 
 		for (int i = 0; i < this._board.length(); i++) {
 			String charString = String.valueOf(this._board.charAt(i));
-			PieceType type = PieceType.valueOf(charString.toLowerCase());
+			PieceType type = PieceType.fromCharString(charString.toLowerCase());
 
 			// Ignore empty and same color
 			if (type == PieceType.Empty)
@@ -163,7 +180,7 @@ public class Board {
 					this.elephants.add(piece);
 					break;
 				case King:
-					if (charString.toLowerCase() == charString) {
+					if (charString.toLowerCase().equals(charString)) {
 						this.blackKing = piece;
 					} else {
 						this.redKing = piece;
@@ -189,40 +206,41 @@ public class Board {
 
 	public String generateRawMove(PieceType type, int x, int y, boolean isRed, String board) {
 		// let func: generateMoveFunc | null = null;
-		Piece piece;
 		String boardPos;
 		if (board == null)
 			boardPos = getBoard();
 		else
 			boardPos = board;
 
+		String result = "";
+
 		switch (type) {
 			case King:
-				piece = king;
+				result = king.generateMove(boardPos, x, y, isRed);
 				break;
 			case Advisor:
-				piece = advisor;
+				result = advisor.generateMove(boardPos, x, y, isRed);
 				break;
 			case Elephant:
-				piece = elephant;
+				result = elephant.generateMove(boardPos, x, y, isRed);
 				break;
 			case Horse:
-				piece = horse;
+				result = horse.generateMove(boardPos, x, y, isRed);
 				break;
 			case Rook:
-				piece = rook;
+				result = rook.generateMove(boardPos, x, y, isRed);
 				break;
 			case Cannon:
-				piece = canon;
+				result = canon.generateMove(boardPos, x, y, isRed);
 				break;
 			case Pawn:
-				piece = pawn;
+				result = pawn.generateMove(boardPos, x, y, isRed);
 				break;
 			default:
 				return "";
 		}
 
-		return piece.generateMove(boardPos, x, y, isRed);
+		return result;
 		// return func ? func(board || this.getInstance().getBoard(), x, y, isRed) : "";
 	}
 
@@ -237,13 +255,13 @@ public class Board {
 		String result = "";
 
 		for (String value : arr) {
-			if (value == "")
+			if (value.equals(""))
 				break;
 
 			String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
 
 			if (!isKingChecked(board, isRed, fillInStr)) {
-				result += "${value}/";
+				result += value + "/";
 			}
 		}
 
@@ -317,7 +335,7 @@ public class Board {
 			String[] arr = move.split("/");
 			for (int j = 0; j < arr.length; j++) {
 				var str = arr[j];
-				if (str != "" && String.valueOf(str.charAt(2)).toLowerCase() == PieceType.King.getValue())
+				if (!str.equals("") && String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.King.getValue()))
 					return true;
 			}
 		}

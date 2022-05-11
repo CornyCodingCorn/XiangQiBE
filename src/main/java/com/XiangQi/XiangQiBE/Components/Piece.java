@@ -24,6 +24,15 @@ public class Piece {
     @Getter
     @Setter
     private String value;
+
+		public static PieceType fromCharString(String value) {
+			for (PieceType type : PieceType.values()) {
+				if (type.value.equalsIgnoreCase(value)) {
+						return type;
+				}
+			}
+			throw new IllegalArgumentException("No piece with type " + value + " found");
+		}
   }
 
   PieceType type = PieceType.Empty;
@@ -34,13 +43,13 @@ public class Piece {
     String charString = "";
     charString = piece;
 
-		if (charString == PieceType.Empty.getValue()) 
+		if (charString.equals(PieceType.Empty.getValue())) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase() == charString;
+			return charString.toUpperCase().equals(charString);
 		} else {
-			return charString.toLowerCase() == charString;
+			return charString.toLowerCase().equals(charString);
 		}
   }
 	//public isSameColor(board: string, isRed: boolean, x: number,	y: number,): boolean;
@@ -51,32 +60,34 @@ public class Piece {
 		else 
       charString = getPiece(info, x, y);
 
-		if (charString == PieceType.Empty.getValue()) 
+		if (charString.equals(PieceType.Empty.getValue())) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase() == charString;
+			return charString.toUpperCase().equals(charString);
 		} else {
-			return charString.toLowerCase() == charString;
+			return charString.toLowerCase().equals(charString);
 		}
 	}
 
 	public static String getPiece(String board, int x, int y) {
+		if (!isPosValid(x, y))
+			return "";
 		return String.valueOf(board.charAt(x + y * Board.BOARD_COL));
 	}
 
 	public static PieceType getPieceType(String board, int x, int y)  {
 		String charString = String.valueOf(board.charAt(x + y * Board.BOARD_COL)).toLowerCase();
-		return PieceType.valueOf(charString);
+		return PieceType.fromCharString(charString);
 	}
 
 	public static boolean isPieceRed(String board, int x, int y) {
 		String charString = getPiece(board, x, y);
-		return charString == charString.toUpperCase();
+		return charString.equals(charString.toUpperCase());
 	}
 
 	public static boolean isPieceRed(String piece) {
-		return piece == piece.toUpperCase();
+		return piece.equals(piece.toUpperCase());
 	}
 
 	//public static getPieceObject(board: string, x: number, y: number): Piece 
@@ -106,7 +117,7 @@ public class Piece {
 		return result;
 	}
 
-	public boolean isPosValid(int x, int y) {
+	public static boolean isPosValid(int x, int y) {
 		return (
 			x >= 0 && x < Board.BOARD_COL && y >= 0 && y < Board.BOARD_ROW
 		);
@@ -121,7 +132,7 @@ public class Piece {
 		String result = "";
 		String piece = getPiece(board, x, y);
 		if (isPosValid(x, y) && !isSameColor(piece, isRed)) {
-			result = "${x}${y}${piece}/";
+			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
 
 		return result;
@@ -136,11 +147,8 @@ public class Piece {
 	) {
 		String result = "";
 		String piece = getPiece(board, x, y);
-		if (
-			isPosValid(x, y) &&
-			(!isSameColor(piece, isRed) || forceReturn)
-		) {
-			result = "${x}${y}${piece}/";
+		if (isPosValid(x, y) && (!isSameColor(piece, isRed) || forceReturn)) {
+			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
 
 		return result;
@@ -167,8 +175,12 @@ public class Piece {
 			isValid = isPosValid(x, y);
 			if (isValid) {
 				String str = generatePos(board, x, y, isRed);
-				anotherPiece = str == "" || String.valueOf(str.charAt(2)) != PieceType.Empty.getValue();
-				if (String.valueOf(str.charAt(2)) != PieceType.Empty.getValue()) {
+				
+				if (str.equals(""))
+					break;
+
+				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue());
+				if (!String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue())) {
 					if (allowKill) result += str;
 				} else {
 					result += str;
