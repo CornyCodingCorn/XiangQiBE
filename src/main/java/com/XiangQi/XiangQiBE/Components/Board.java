@@ -3,8 +3,8 @@ package com.XiangQi.XiangQiBE.Components;
 import java.util.Vector;
 
 import com.XiangQi.XiangQiBE.Components.Piece.PieceType;
+import com.XiangQi.XiangQiBE.utils.PieceMove;
 import com.XiangQi.XiangQiBE.utils.StringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +23,8 @@ public class Board {
 		private int value;
 	}
 
+	@Autowired
+	private Piece piece;
 	@Autowired
 	private Advisor advisor;
 	@Autowired
@@ -68,13 +70,37 @@ public class Board {
 	public Piece blackKing = new Piece();
 	public Piece redKing = new Piece();
 
-	// private static Board _instance = null;
-	// public static Board getInstance() {
-	// if (Board._instance == null) {
-	// Board._instance = new Board();
-	// }
-	// return Board._instance;
-	// }
+	public boolean IsMoveValid(String board, String move) {
+		setBoard(board);
+
+		var moveObj = PieceMove.Parse(move);
+		// Update the full move string to new move string;
+		move = moveObj.newX + moveObj.newY + moveObj.piece;
+		boolean isRed = moveObj.piece.equals(moveObj.piece.toUpperCase());
+
+		String[] validMoves = generateMove(moveObj.oldX, moveObj.oldY, isRed).split("/");
+		for (String validMove : validMoves) {
+			if (validMove.equals(move)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public String UpdateBoard(String board, String move) {
+		var moveObj = PieceMove.Parse(move);
+
+		board = StringUtils.replaceCharAt(board, PieceType.Empty.getValue(), moveObj.oldX + moveObj.oldY * BOARD_COL);
+		board = StringUtils.replaceCharAt(board, PieceType.Empty.getValue(), moveObj.oldX + moveObj.oldY * BOARD_COL);
+
+		return board;
+	}
+
+	public Result CheckResult(String board, boolean isRedTurn) {
+		// Check the result of the board game.
+		return Result.CONTINUE;
+	}
 
 	protected String _board = null;
 
@@ -218,7 +244,9 @@ public class Board {
 		// return func ? func(board || this.getInstance().getBoard(), x, y, isRed) : "";
 	}
 
-	public String generateMove(PieceType type, int x, int y, boolean isRed) {
+	public String generateMove(int x, int y, boolean isRed) {
+		PieceType type = Piece.getPieceType(_board, x, y);
+
 		Board board = getInfoOfOneSide(!isRed);
 		board.removeAt(x, y);
 
@@ -229,6 +257,7 @@ public class Board {
 		for (String value : arr) {
 			if (value.equals(""))
 				break;
+
 			String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
 
 			if (!isKingChecked(board, isRed, fillInStr)) {

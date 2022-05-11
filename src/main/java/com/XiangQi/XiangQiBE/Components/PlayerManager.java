@@ -58,8 +58,7 @@ class OnDisconnectListener implements WebsocketEvent {
 
   @Override
   public void invoke(StompHeaderAccessor accessor) {
-    playerManager
-        .removeSession(accessor.getSessionId());
+    playerManager.removeSession(accessor.getSessionId());
   }
 }
 
