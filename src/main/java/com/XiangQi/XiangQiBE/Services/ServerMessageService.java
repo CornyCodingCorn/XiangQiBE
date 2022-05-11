@@ -13,6 +13,6 @@ public class ServerMessageService {
   private SimpMessagingTemplate simpMessagingTemplate;
   
   public void SendResponse(String username, ResponseObject<?> resObj) {
-    //simpMessagingTemplate.convertAndSend(WS_USER_BROKER + "/" + username, resObj);
+    simpMessagingTemplate.convertAndSend(WS_USER_BROKER + "/" + username, resObj);
   }
 }

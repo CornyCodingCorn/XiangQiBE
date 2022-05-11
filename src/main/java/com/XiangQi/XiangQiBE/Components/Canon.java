@@ -20,8 +20,8 @@ public class Canon extends Piece {
 		String result = "";
 		result += generateGenericMove(board, x, y, isRed, deltaX, deltaY, false);
 
-		String[] arr = result.substring(0, result.length() - 1).split("/");
-		String last = arr[arr.length - 1];
+		String[] arr = result.split("/");
+		String last = arr.length <= 0 ? null : arr[arr.length - 1];
 
 		if (last != null && !last.equals("")) {
 			x = Integer.parseInt(String.valueOf(last.charAt(0)));
@@ -42,7 +42,7 @@ public class Canon extends Piece {
 
 			// If the last piece of the returned result is a
 			// piece then add the last one to the result of this function.
-			if (last.length() >= 3 && !String.valueOf(last.charAt(2)).equals(PieceType.Empty.getValue())) {
+			if (last.length() >= 3 && !String.valueOf(last.charAt(2)).equals(PieceType.EMPTY.getValue())) {
 				result += last + "/";
 			}
 		}

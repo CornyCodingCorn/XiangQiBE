@@ -5,6 +5,7 @@ import java.util.Vector;
 import com.XiangQi.XiangQiBE.Components.Piece.PieceType;
 import com.XiangQi.XiangQiBE.utils.PieceMove;
 import com.XiangQi.XiangQiBE.utils.StringUtils;
+import com.XiangQi.XiangQiBE.utils.Vector2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +25,6 @@ public class Board {
 	}
 
 	@Autowired
-	private Piece piece;
-	@Autowired
 	private Advisor advisor;
 	@Autowired
 	private Canon canon;
@@ -40,23 +39,6 @@ public class Board {
 	@Autowired
 	private Rook rook;
 
-	// feels like something wrong :v
-	public boolean IsMoveValid(String board, String move) {
-		setBoard(board);
-		boolean isRed = Piece.isPieceRed(String.valueOf(move.charAt(2)));
-
-		return isKingChecked(this, isRed, move);
-	}
-
-	public String UpdateBoard(String board, String move) {
-		return board;
-	}
-
-	public Result CheckResult(String board, boolean isRedTurn) {
-		// Check the result of the board game.
-		return Result.CONTINUE;
-	}
-
 	public static final int BOARD_COL = 9;
 	public static final int BOARD_ROW = 10;
 
@@ -70,38 +52,6 @@ public class Board {
 	public Piece blackKing = new Piece();
 	public Piece redKing = new Piece();
 
-	public boolean IsMoveValid(String board, String move) {
-		setBoard(board);
-
-		var moveObj = PieceMove.Parse(move);
-		// Update the full move string to new move string;
-		move = moveObj.newX + moveObj.newY + moveObj.piece;
-		boolean isRed = moveObj.piece.equals(moveObj.piece.toUpperCase());
-
-		String[] validMoves = generateMove(moveObj.oldX, moveObj.oldY, isRed).split("/");
-		for (String validMove : validMoves) {
-			if (validMove.equals(move)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public String UpdateBoard(String board, String move) {
-		var moveObj = PieceMove.Parse(move);
-
-		board = StringUtils.replaceCharAt(board, PieceType.Empty.getValue(), moveObj.oldX + moveObj.oldY * BOARD_COL);
-		board = StringUtils.replaceCharAt(board, PieceType.Empty.getValue(), moveObj.oldX + moveObj.oldY * BOARD_COL);
-
-		return board;
-	}
-
-	public Result CheckResult(String board, boolean isRedTurn) {
-		// Check the result of the board game.
-		return Result.CONTINUE;
-	}
-
 	protected String _board = null;
 
 	public void setBoard(String _board) {
@@ -113,10 +63,128 @@ public class Board {
 		return _board;
 	}
 
-	public void removeAt(int x, int y) {
-		this._board =
-				StringUtils.replaceCharAt(this._board, PieceType.Empty.getValue(), x + y * BOARD_COL);
-		this._findAllPieces();
+	public boolean IsMoveValid(String move) {
+		var moveObj = PieceMove.Parse(move);
+		// Update the full move string to new move string;
+		move = "" + moveObj.newX + moveObj.newY;
+		boolean isRed = moveObj.piece.equals(moveObj.piece.toUpperCase());
+
+		String[] validMoves = generateMove(moveObj.oldX, moveObj.oldY, isRed).split("/");
+		for (String validMove : validMoves) {
+			if (validMove.substring(0, 2).equals(move)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public String UpdateBoard(String move) {
+		var moveObj = PieceMove.Parse(move);
+
+		var piece = getPieceAt(moveObj.oldX, moveObj.oldY, false);
+		piece.location.x = moveObj.newX;
+		piece.location.y = moveObj.newY;
+
+		_board = StringUtils.replaceCharAt(_board, PieceType.EMPTY.getValue(),
+				moveObj.oldX + moveObj.oldY * BOARD_COL);
+		_board = StringUtils.replaceCharAt(_board, "" + move.charAt(2),
+				moveObj.newX + moveObj.newY * BOARD_COL);
+
+		return _board;
+	}
+
+	public Result CheckResult(boolean isRedTurn) {
+		// Get other player king and check for move if have more than one move then Continue
+		Piece otherKing = isRedTurn ? blackKing : redKing;
+		String move = generateMove(otherKing.location.x, otherKing.location.y, !isRedTurn);
+
+		// If move is not empty then continue
+		if (!StringUtils.isStringEmpty(move)) {
+			return Result.CONTINUE;
+		}
+
+		Board otherSide = getInfoOfOneSide(otherKing.isRed);
+		Vector<Piece> otherPieces = new Vector<Piece>();
+		otherPieces.addAll(otherSide.rooks);
+		otherPieces.addAll(otherSide.advisors);
+		otherPieces.addAll(otherSide.canons);
+		otherPieces.addAll(otherSide.elephants);
+		otherPieces.addAll(otherSide.horses);
+		otherPieces.addAll(otherSide.pawns);
+
+		for (var otherPiece : otherPieces) {
+			String possibleMoves = generateMove(otherPiece.location.x, otherPiece.location.y, otherPiece.isRed);
+			if (!StringUtils.isStringEmpty(possibleMoves)) {
+				// If have one piece that is movable on next turn then continue
+				return Result.CONTINUE;
+			}
+		}
+
+		// If no piece is movable on next turn then if the king is checked then Win otherwise Draw
+		// Get info of the side of the player of this turn then check if the king of other player is
+		// checked. 
+		if (isKingChecked(getInfoOfOneSide(isRedTurn), otherKing.isRed, "")) {
+			return isRedTurn ? Result.RED_WIN : Result.BLACK_WIN;
+		}
+
+		return Result.DRAW;
+	}
+
+	/**
+	 * 
+	 * @param x
+	 * @param y
+	 * @param removeIt if true then will remove the found piece unless it's a king
+	 * @return
+	 */
+	public Piece getPieceAt(int x, int y, boolean removeIt) {
+		PieceType piece = PieceType.fromCharString("" + this._board.charAt(x + y * BOARD_COL));
+		if (removeIt) this._board = StringUtils.replaceCharAt(this._board, PieceType.EMPTY.getValue(), x + y * BOARD_COL);
+
+		Vector<Piece> pieceList = null;
+		switch (piece) {
+			case ROOK:
+				pieceList = rooks;
+				break;
+			case HORSE:
+				pieceList = horses;
+				break;
+			case ELEPHANT:
+				pieceList = elephants;
+				break;
+			case ADVISOR:
+				pieceList = advisors;
+				break;
+			case KING:
+				Piece king = null;
+				if (this.blackKing.location.isEqual(Vector2.create(x, y))) {
+					king = this.blackKing;
+				} else {
+					king = this.redKing;
+				}
+				return king;
+			case PAWN:
+				pieceList = pawns;
+				break;
+			case CANON:
+				pieceList = canons;
+				break;
+			case EMPTY:
+				break;
+		}
+		
+		if (pieceList != null) {
+			for (int i = 0; i < pieceList.size(); i++) {
+				var iPiece = pieceList.get(i);
+				if (iPiece.location.isEqual(Vector2.create(x, y))) {
+					if (removeIt) pieceList.remove(i);
+					return iPiece;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	public Board getInfoOfOneSide(boolean isRed) {
@@ -132,7 +200,7 @@ public class Board {
 		board.blackKing = this.blackKing;
 		board.redKing = this.redKing;
 
-		board.setBoard(this._board);
+		board._board = this._board;
 
 		return board;
 	}
@@ -156,30 +224,30 @@ public class Board {
 			PieceType type = PieceType.fromCharString(charString.toLowerCase());
 
 			// Ignore empty and same color
-			if (type == PieceType.Empty)
+			if (type == PieceType.EMPTY)
 				continue;
 
-			Piece piece = Piece.getPieceObject(this._board, i);
 			switch (type) {
-				case Cannon:
-					this.canons.add(piece);
+				case CANON:
+					this.canons.add(Piece.getPieceObject(this._board, i, Canon.class));
 					break;
-				case Horse:
-					this.horses.add(piece);
+				case HORSE:
+					this.horses.add(Piece.getPieceObject(this._board, i, Horse.class));
 					break;
-				case Rook:
-					this.rooks.add(piece);
+				case ROOK:
+					this.rooks.add(Piece.getPieceObject(this._board, i, Rook.class));
 					break;
-				case Pawn:
-					this.pawns.add(piece);
+				case PAWN:
+					this.pawns.add(Piece.getPieceObject(this._board, i, Pawn.class));
 					break;
-				case Advisor:
-					this.advisors.add(piece);
+				case ADVISOR:
+					this.advisors.add(Piece.getPieceObject(this._board, i, Advisor.class));
 					break;
-				case Elephant:
-					this.elephants.add(piece);
+				case ELEPHANT:
+					this.elephants.add(Piece.getPieceObject(this._board, i, Elephant.class));
 					break;
-				case King:
+				case KING:
+					var piece = Piece.getPieceObject(this._board, i, King.class);
 					if (charString.toLowerCase().equals(charString)) {
 						this.blackKing = piece;
 					} else {
@@ -215,25 +283,25 @@ public class Board {
 		String result = "";
 
 		switch (type) {
-			case King:
+			case KING:
 				result = king.generateMove(boardPos, x, y, isRed);
 				break;
-			case Advisor:
+			case ADVISOR:
 				result = advisor.generateMove(boardPos, x, y, isRed);
 				break;
-			case Elephant:
+			case ELEPHANT:
 				result = elephant.generateMove(boardPos, x, y, isRed);
 				break;
-			case Horse:
+			case HORSE:
 				result = horse.generateMove(boardPos, x, y, isRed);
 				break;
-			case Rook:
+			case ROOK:
 				result = rook.generateMove(boardPos, x, y, isRed);
 				break;
-			case Cannon:
+			case CANON:
 				result = canon.generateMove(boardPos, x, y, isRed);
 				break;
-			case Pawn:
+			case PAWN:
 				result = pawn.generateMove(boardPos, x, y, isRed);
 				break;
 			default:
@@ -248,7 +316,7 @@ public class Board {
 		PieceType type = Piece.getPieceType(_board, x, y);
 
 		Board board = getInfoOfOneSide(!isRed);
-		board.removeAt(x, y);
+		board.getPieceAt(x, y, true);
 
 		String rawMove = generateRawMove(type, x, y, isRed, null);
 		String[] arr = rawMove.split("/");
@@ -258,7 +326,8 @@ public class Board {
 			if (value.equals(""))
 				break;
 
-			String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
+			String fillInStr =
+					value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type.getValue());
 
 			if (!isKingChecked(board, isRed, fillInStr)) {
 				result += value + "/";
@@ -272,7 +341,7 @@ public class Board {
 	 * If return something other than "" then the king is checked
 	 * 
 	 * @param board The board object created from the normal board but remove all the allies;
-	 * @param isRed
+	 * @param isRed Whose king we are checking
 	 * @param fillPiece This piece fill get filled in if defined, the board will get changed then
 	 *        restored to normal
 	 * @returns
@@ -292,7 +361,7 @@ public class Board {
 			fillX = Integer.parseInt(String.valueOf(fillPiece.charAt(0)));
 			fillY = Integer.parseInt(String.valueOf(fillPiece.charAt(1)));
 
-			boardStr = StringUtils.replaceCharAt(boardStr, String.valueOf(fillPiece.charAt(2)),
+			boardStr = StringUtils.replaceCharAt(boardStr, "" + fillPiece.charAt(2),
 					fillX + fillY * BOARD_COL);
 		}
 
@@ -312,7 +381,7 @@ public class Board {
 			boolean blocked = false;
 			for (int i = startIdx; i < endIdx; i++) {
 				PieceType piece = Piece.getPieceType(board.getBoard(), ourKing.location.x, i);
-				if (piece != PieceType.Empty) {
+				if (piece != PieceType.EMPTY) {
 					blocked = true;
 					break;
 				}
@@ -335,7 +404,8 @@ public class Board {
 			String[] arr = move.split("/");
 			for (int j = 0; j < arr.length; j++) {
 				var str = arr[j];
-				if (!str.equals("") && String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.King.getValue()))
+				if (!str.equals("")
+						&& String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.KING.getValue()))
 					return true;
 			}
 		}

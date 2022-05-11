@@ -2,9 +2,11 @@ package com.XiangQi.XiangQiBE.Services;
 
 import java.util.List;
 import com.XiangQi.XiangQiBE.Components.Board;
+import com.XiangQi.XiangQiBE.Components.Board.Result;
 import com.XiangQi.XiangQiBE.Models.LobbiesMessage;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
+import com.XiangQi.XiangQiBE.Models.Lobby.State;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage.EndType;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
@@ -94,13 +96,22 @@ public class LobbyService {
             throw new LobbyException(lobby.getId(), "This isn't red's turn");
         }
 
-        if (board.IsMoveValid(lobby.getBoard(), move)) {
+        // Update board component then check if the move is valid
+        board.setBoard(lobby.getBoard());
+        if (board.IsMoveValid(move)) {
             lobby.getMoves().add(move + " " + lobby.getBoard());
-            String newBoard= board.UpdateBoard(lobby.getBoard(), move);
+
+            // Update the board then get the result
+            String newBoard= board.UpdateBoard(move);
+            var result = board.CheckResult(lobby.isRedTurn());
+
+            // Update the data to db
             lobby.setRedTurn(!lobby.isRedTurn());
             lobby.setBoard(newBoard);
+            if (result != Result.CONTINUE) {
+                lobby.setState(State.FINISHED);
+            }
 
-            var result = board.CheckResult(lobby.getBoard(), lobby.isRedTurn());
             switch (result) {
                 case CONTINUE:
                 sendMessageToLobbyMove(lobby.getId(), player, move);                
@@ -157,7 +168,7 @@ public class LobbyService {
             // If playing then player 1 win
             lobby.setState(Lobby.State.FINISHED);
             sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, lobby.getPlayer1(), lobby, LobbyMessage.EndType.WIN.getValue()); 
-        } else {
+        } else if (lobby.getState() == Lobby.State.WAITING) {
             // If a player quit and it doesn't get delete which mean the other player is still there the lobby will reopen
             sendLobbiesMessage(lobby, player, false);
         }
