@@ -5,6 +5,7 @@ import java.util.Vector;
 import com.XiangQi.XiangQiBE.Components.Piece.PieceType;
 import com.XiangQi.XiangQiBE.utils.StringUtils;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +22,21 @@ public class Board {
 		@Setter
 		private int value;
 	}
+
+	@Autowired
+	private Advisor advisor;
+	@Autowired
+	private Canon canon;
+	@Autowired
+	private Elephant elephant;
+	@Autowired
+	private Horse horse;
+	@Autowired
+	private King king;
+	@Autowired
+	private Pawn pawn;
+	@Autowired
+	private Rook rook;
 
 	// feels like something wrong :v
 	public boolean IsMoveValid(String board, String move) {
@@ -111,7 +127,7 @@ public class Board {
 
 		for (int i = 0; i < this._board.length(); i++) {
 			String charString = String.valueOf(this._board.charAt(i));
-			PieceType type = PieceType.valueOf(charString.toLowerCase());
+			PieceType type = PieceType.fromCharString(charString.toLowerCase());
 
 			// Ignore empty and same color
 			if (type == PieceType.Empty)
@@ -138,7 +154,7 @@ public class Board {
 					this.elephants.add(piece);
 					break;
 				case King:
-					if (charString.toLowerCase() == charString) {
+					if (charString.toLowerCase().equals(charString)) {
 						this.blackKing = piece;
 					} else {
 						this.redKing = piece;
@@ -164,40 +180,41 @@ public class Board {
 
 	public String generateRawMove(PieceType type, int x, int y, boolean isRed, String board) {
 		// let func: generateMoveFunc | null = null;
-		Piece piece;
 		String boardPos;
 		if (board == null)
 			boardPos = getBoard();
 		else
 			boardPos = board;
 
+		String result = "";
+
 		switch (type) {
 			case King:
-				piece = new King();
+				result = king.generateMove(boardPos, x, y, isRed);
 				break;
 			case Advisor:
-				piece = new Advisor();
+				result = advisor.generateMove(boardPos, x, y, isRed);
 				break;
 			case Elephant:
-				piece = new Elephant();
+				result = elephant.generateMove(boardPos, x, y, isRed);
 				break;
 			case Horse:
-				piece = new Horse();
+				result = horse.generateMove(boardPos, x, y, isRed);
 				break;
 			case Rook:
-				piece = new Rook();
+				result = rook.generateMove(boardPos, x, y, isRed);
 				break;
 			case Cannon:
-				piece = new Canon();
+				result = canon.generateMove(boardPos, x, y, isRed);
 				break;
 			case Pawn:
-				piece = new Pawn();
+				result = pawn.generateMove(boardPos, x, y, isRed);
 				break;
 			default:
 				return "";
 		}
 
-		return piece.generateMove(boardPos, x, y, isRed);
+		return result;
 		// return func ? func(board || this.getInstance().getBoard(), x, y, isRed) : "";
 	}
 
@@ -210,12 +227,12 @@ public class Board {
 		String result = "";
 
 		for (String value : arr) {
-			if (value == "")
+			if (value.equals(""))
 				break;
 			String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
 
 			if (!isKingChecked(board, isRed, fillInStr)) {
-				result += "${value}/";
+				result += value + "/";
 			}
 		}
 
@@ -289,7 +306,7 @@ public class Board {
 			String[] arr = move.split("/");
 			for (int j = 0; j < arr.length; j++) {
 				var str = arr[j];
-				if (str != "" && String.valueOf(str.charAt(2)).toLowerCase() == PieceType.King.getValue())
+				if (!str.equals("") && String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.King.getValue()))
 					return true;
 			}
 		}
