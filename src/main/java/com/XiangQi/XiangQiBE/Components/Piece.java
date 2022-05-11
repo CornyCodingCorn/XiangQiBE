@@ -24,6 +24,15 @@ public class Piece {
     @Getter
     @Setter
     private String value;
+
+		public static PieceType fromCharString(String value) {
+			for (PieceType type : PieceType.values()) {
+				if (type.value.equalsIgnoreCase(value)) {
+						return type;
+				}
+			}
+			throw new IllegalArgumentException("No piece with type " + value + " found");
+		}
   }
 
   PieceType type = PieceType.Empty;
@@ -69,7 +78,7 @@ public class Piece {
 
 	public static PieceType getPieceType(String board, int x, int y)  {
 		String charString = String.valueOf(board.charAt(x + y * Board.BOARD_COL)).toLowerCase();
-		return PieceType.valueOf(charString);
+		return PieceType.fromCharString(charString);
 	}
 
 	public static boolean isPieceRed(String board, int x, int y) {

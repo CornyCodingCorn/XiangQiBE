@@ -127,7 +127,7 @@ public class Board {
 
 		for (int i = 0; i < this._board.length(); i++) {
 			String charString = String.valueOf(this._board.charAt(i));
-			PieceType type = PieceType.valueOf(charString.toLowerCase());
+			PieceType type = PieceType.fromCharString(charString.toLowerCase());
 
 			// Ignore empty and same color
 			if (type == PieceType.Empty)
@@ -232,7 +232,7 @@ public class Board {
 			String fillInStr = value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type);
 
 			if (!isKingChecked(board, isRed, fillInStr)) {
-				result += "${value}/";
+				result += value + "/";
 			}
 		}
 
