@@ -16,7 +16,7 @@ public class Piece {
     Advisor("a"),
     Elephant("e"),
     Rook("r"),
-    Cannon("c"),
+    Canon("c"),
     Horse("h"),
     Pawn("p"),
     Empty("0");
@@ -91,17 +91,23 @@ public class Piece {
 	}
 
 	//public static getPieceObject(board: string, x: number, y: number): Piece 
-	public static Piece getPieceObject(String board, int index) {
+	public static <T extends Piece> T getPieceObject(String board, int index, Class<T> pieceClass) {
 		int posX = index % Board.BOARD_COL;
 		int posY = (int)Math.floor(index / Board.BOARD_COL);
+		PieceType type = getPieceType(board, posX, posY);
 
-		Piece result = new Piece();
-		result.location.x = posX;
-		result.location.y = posY;
-		result.type = getPieceType(board, posX, posY);
-		result.isRed = isPieceRed(board, posX, posY);
-
-		return result;
+		try {
+			T result = pieceClass.getConstructor().newInstance();
+			result.location.x = posX;
+			result.location.y = posY;
+			result.type = type;
+			result.isRed = isPieceRed(board, posX, posY);
+	
+			return result;
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 	public Piece getPieceObject(String board, int x, int y) {

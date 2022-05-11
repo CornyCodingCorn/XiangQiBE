@@ -26,6 +26,16 @@ public class Lobby {
     "0C00000C0" +
     "000000000" +
     "RHEAKAEHR";
+    // "rheak0C00" +
+    // "0000a00C0" +
+    // "0c00000c0" +
+    // "p0p0p0p0p" +
+    // "000000000" +
+    // "000000000" +
+    // "P0P0P0P0P" +
+    // "000000000" +
+    // "000000000" +
+    // "RHEAKAEHR";
 
     @AllArgsConstructor
     public enum State {
