@@ -32,6 +32,6 @@ public class Horse extends Piece {
 
 	private boolean isValid(String board, int x, int y) {
 		String charString = getPiece(board, x, y);
-		return charString.equals(PieceType.Empty.getValue());
+		return charString.equals(PieceType.EMPTY.getValue());
 	}
 }

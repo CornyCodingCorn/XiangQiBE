@@ -86,7 +86,7 @@ public class Board {
 		piece.location.x = moveObj.newX;
 		piece.location.y = moveObj.newY;
 
-		_board = StringUtils.replaceCharAt(_board, PieceType.Empty.getValue(),
+		_board = StringUtils.replaceCharAt(_board, PieceType.EMPTY.getValue(),
 				moveObj.oldX + moveObj.oldY * BOARD_COL);
 		_board = StringUtils.replaceCharAt(_board, "" + move.charAt(2),
 				moveObj.newX + moveObj.newY * BOARD_COL);
@@ -140,23 +140,23 @@ public class Board {
 	 */
 	public Piece getPieceAt(int x, int y, boolean removeIt) {
 		PieceType piece = PieceType.fromCharString("" + this._board.charAt(x + y * BOARD_COL));
-		if (removeIt) this._board = StringUtils.replaceCharAt(this._board, PieceType.Empty.getValue(), x + y * BOARD_COL);
+		if (removeIt) this._board = StringUtils.replaceCharAt(this._board, PieceType.EMPTY.getValue(), x + y * BOARD_COL);
 
 		Vector<Piece> pieceList = null;
 		switch (piece) {
-			case Rook:
+			case ROOK:
 				pieceList = rooks;
 				break;
-			case Horse:
+			case HORSE:
 				pieceList = horses;
 				break;
-			case Elephant:
+			case ELEPHANT:
 				pieceList = elephants;
 				break;
-			case Advisor:
+			case ADVISOR:
 				pieceList = advisors;
 				break;
-			case King:
+			case KING:
 				Piece king = null;
 				if (this.blackKing.location.isEqual(Vector2.create(x, y))) {
 					king = this.blackKing;
@@ -164,13 +164,13 @@ public class Board {
 					king = this.redKing;
 				}
 				return king;
-			case Pawn:
+			case PAWN:
 				pieceList = pawns;
 				break;
-			case Canon:
+			case CANON:
 				pieceList = canons;
 				break;
-			case Empty:
+			case EMPTY:
 				break;
 		}
 		
@@ -224,29 +224,29 @@ public class Board {
 			PieceType type = PieceType.fromCharString(charString.toLowerCase());
 
 			// Ignore empty and same color
-			if (type == PieceType.Empty)
+			if (type == PieceType.EMPTY)
 				continue;
 
 			switch (type) {
-				case Canon:
+				case CANON:
 					this.canons.add(Piece.getPieceObject(this._board, i, Canon.class));
 					break;
-				case Horse:
+				case HORSE:
 					this.horses.add(Piece.getPieceObject(this._board, i, Horse.class));
 					break;
-				case Rook:
+				case ROOK:
 					this.rooks.add(Piece.getPieceObject(this._board, i, Rook.class));
 					break;
-				case Pawn:
+				case PAWN:
 					this.pawns.add(Piece.getPieceObject(this._board, i, Pawn.class));
 					break;
-				case Advisor:
+				case ADVISOR:
 					this.advisors.add(Piece.getPieceObject(this._board, i, Advisor.class));
 					break;
-				case Elephant:
+				case ELEPHANT:
 					this.elephants.add(Piece.getPieceObject(this._board, i, Elephant.class));
 					break;
-				case King:
+				case KING:
 					var piece = Piece.getPieceObject(this._board, i, King.class);
 					if (charString.toLowerCase().equals(charString)) {
 						this.blackKing = piece;
@@ -283,25 +283,25 @@ public class Board {
 		String result = "";
 
 		switch (type) {
-			case King:
+			case KING:
 				result = king.generateMove(boardPos, x, y, isRed);
 				break;
-			case Advisor:
+			case ADVISOR:
 				result = advisor.generateMove(boardPos, x, y, isRed);
 				break;
-			case Elephant:
+			case ELEPHANT:
 				result = elephant.generateMove(boardPos, x, y, isRed);
 				break;
-			case Horse:
+			case HORSE:
 				result = horse.generateMove(boardPos, x, y, isRed);
 				break;
-			case Rook:
+			case ROOK:
 				result = rook.generateMove(boardPos, x, y, isRed);
 				break;
-			case Canon:
+			case CANON:
 				result = canon.generateMove(boardPos, x, y, isRed);
 				break;
-			case Pawn:
+			case PAWN:
 				result = pawn.generateMove(boardPos, x, y, isRed);
 				break;
 			default:
@@ -381,7 +381,7 @@ public class Board {
 			boolean blocked = false;
 			for (int i = startIdx; i < endIdx; i++) {
 				PieceType piece = Piece.getPieceType(board.getBoard(), ourKing.location.x, i);
-				if (piece != PieceType.Empty) {
+				if (piece != PieceType.EMPTY) {
 					blocked = true;
 					break;
 				}
@@ -405,7 +405,7 @@ public class Board {
 			for (int j = 0; j < arr.length; j++) {
 				var str = arr[j];
 				if (!str.equals("")
-						&& String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.King.getValue()))
+						&& String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.KING.getValue()))
 					return true;
 			}
 		}

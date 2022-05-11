@@ -12,14 +12,14 @@ import lombok.Setter;
 public class Piece {
   @AllArgsConstructor
   public enum PieceType {
-    King("k"),
-    Advisor("a"),
-    Elephant("e"),
-    Rook("r"),
-    Canon("c"),
-    Horse("h"),
-    Pawn("p"),
-    Empty("0");
+    KING("k"),
+    ADVISOR("a"),
+    ELEPHANT("e"),
+    ROOK("r"),
+    CANON("c"),
+    HORSE("h"),
+    PAWN("p"),
+    EMPTY("0");
   
     @Getter
     @Setter
@@ -35,7 +35,7 @@ public class Piece {
 		}
   }
 
-  PieceType type = PieceType.Empty;
+  PieceType type = PieceType.EMPTY;
 	boolean isRed = false;
 	Vector2 location = Vector2.create(0, 0);
 
@@ -43,7 +43,7 @@ public class Piece {
     String charString = "";
     charString = piece;
 
-		if (charString.equals(PieceType.Empty.getValue())) 
+		if (charString.equals(PieceType.EMPTY.getValue())) 
       return false;
 
 		if (isRed) {
@@ -60,7 +60,7 @@ public class Piece {
 		else 
       charString = getPiece(info, x, y);
 
-		if (charString.equals(PieceType.Empty.getValue())) 
+		if (charString.equals(PieceType.EMPTY.getValue())) 
       return false;
 
 		if (isRed) {
@@ -185,8 +185,8 @@ public class Piece {
 				if (str.equals(""))
 					break;
 
-				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue());
-				if (!String.valueOf(str.charAt(2)).equals(PieceType.Empty.getValue())) {
+				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.EMPTY.getValue());
+				if (!String.valueOf(str.charAt(2)).equals(PieceType.EMPTY.getValue())) {
 					if (allowKill) result += str;
 				} else {
 					result += str;
