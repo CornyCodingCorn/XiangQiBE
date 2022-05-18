@@ -15,6 +15,7 @@ public class LobbyMessage {
         CHANGE_READY(3),
         MOVE(4),
         START(5),
+        // If a player concede they will send end message
         END(6);
 
         @Getter
