@@ -10,7 +10,6 @@ import com.XiangQi.XiangQiBE.Models.Lobby.State;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage.EndType;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
-import org.springframework.boot.configurationprocessor.json.JSONStringer;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -174,6 +173,12 @@ public class LobbyService {
         }
 
         lobbyRepo.save(lobby);
+    }
+
+    public void Concede(String player) throws LobbyException {
+        var lobby = getPlayerLobby(player);
+        var otherPlayer = lobby.getPlayer1().equals(player) ?  lobby.getPlayer2() : lobby.getPlayer1();
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, otherPlayer, lobby, LobbyMessage.EndType.constructData(EndType.WIN, ""));
     }
 
     public Lobby getPlayerLobby(String player) throws LobbyException {

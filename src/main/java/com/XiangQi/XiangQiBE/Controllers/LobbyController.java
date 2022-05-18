@@ -89,6 +89,10 @@ public class LobbyController {
         ResponseObject<LobbyMessage> resObj = null;
         try {
             String player = principal.getName();
+            if (!message.getPayload().getPlayer().equals(player)) {
+                throw lobbyService.new LobbyException("", "Player can only send message with their name!");
+            }
+
             var exception = lobbyService.new LobbyException("", "The message of type " + message.getPayload().getType() + " doesn't belong to types that allow to send by client");
             switch(message.getPayload().getType()) {
                 case DISCONNECT:
@@ -99,6 +103,9 @@ public class LobbyController {
                 break;
                 case MOVE:
                 lobbyService.Move(player, message.getPayload().getData());
+                break;
+                case END:
+                lobbyService.Concede(player);
                 break;
                 default:
                 throw exception;
