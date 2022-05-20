@@ -16,7 +16,14 @@ public class LobbyMessage {
         MOVE(4),
         START(5),
         // If a player concede they will send end message
-        END(6);
+        END(6),
+
+        // Can't be sent by player, only sent by server
+        UNDO(7),
+        // When sent by player it meant that they will ask for undo and send over to other player
+        UNDO_REQUEST(8),
+        // When other player sends it with data = "accepted" then that means they accept the undo request. If there is no undo then ignore.
+        UNDO_REPLY(9);
 
         @Getter
         private int value;
@@ -32,6 +39,15 @@ public class LobbyMessage {
         public static String constructData(EndType type, String moveStr) {
             return type + " " + moveStr;
         }
+    }
+
+    @AllArgsConstructor
+    public enum UndoType {
+        REJECTED("REJECTED"),
+        ACCEPTED("ACCEPTED");
+
+        @Getter
+        private String value;
     }
 
     private String player;

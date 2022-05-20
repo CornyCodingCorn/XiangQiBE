@@ -7,7 +7,6 @@ import com.mongodb.lang.Nullable;
 import org.hibernate.validator.internal.util.stereotypes.Immutable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -89,6 +88,10 @@ public class Lobby {
     @Setter
     private State state = State.WAITING;
 
+    // If != null then the string value represents the player that made the request
+    // If split by space and have more than 1 element then the request have been rejected before.
+    private String undoRequest = null;
+
     public Lobby(String player1) {
         this.player1 = player1;
         this.redPlayer = player1;
@@ -158,5 +161,24 @@ public class Lobby {
                 blackPlayer = null;
             }
         }
+    }
+
+    public void RequestUndo(String player) {
+        if (player.equals(player1) || player.equals(player2)) {
+            undoRequest = player;
+        }
+    }
+    public void RejectUndo() {
+        if (undoRequest == null) {return;}
+        undoRequest += " rejected";
+    }
+    public String getUndoRequest() {
+        return undoRequest == null ? null : undoRequest.split(" ")[0];
+    }
+    public boolean isUndoRequestRejected() {
+        return undoRequest == null || undoRequest.split(" ").length > 1;
+    }
+    public void ResetUndoRequest() {
+        undoRequest = null;
     }
 }

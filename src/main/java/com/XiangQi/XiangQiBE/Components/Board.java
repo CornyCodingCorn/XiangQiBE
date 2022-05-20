@@ -69,9 +69,14 @@ public class Board {
 		move = "" + moveObj.newX + moveObj.newY;
 		boolean isRed = moveObj.piece.equals(moveObj.piece.toUpperCase());
 
-		String[] validMoves = generateMove(moveObj.oldX, moveObj.oldY, isRed).split("/");
+		String generatedStr = generateMove(moveObj.oldX, moveObj.oldY, isRed);
+		if (generatedStr == null || generatedStr.equals("")) {
+			return false;
+		}
+
+		String[] validMoves = generatedStr.split("/");
 		for (String validMove : validMoves) {
-			if (validMove.substring(0, 2).equals(move)) {
+			if (!validMove.equals("") && validMove.substring(0, 2).equals(move)) {
 				return true;
 			}
 		}
