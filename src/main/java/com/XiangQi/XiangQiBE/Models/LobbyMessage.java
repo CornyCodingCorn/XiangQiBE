@@ -23,7 +23,10 @@ public class LobbyMessage {
         // When sent by player it meant that they will ask for undo and send over to other player
         UNDO_REQUEST(8),
         // When other player sends it with data = "accepted" then that means they accept the undo request. If there is no undo then ignore.
-        UNDO_REPLY(9);
+        UNDO_REPLY(9),
+
+        PLAY_AGAIN(10),
+        RESTART(11);
 
         @Getter
         private int value;

@@ -88,6 +88,15 @@ public class Lobby {
     @Setter
     private State state = State.WAITING;
 
+    @Setter
+    @NotBlank
+    private boolean isPrivate = false;
+
+    @Setter
+    private boolean player1PlayAgain = false;
+    @Setter
+    private boolean player2PlayAgain = false;
+
     // If != null then the string value represents the player that made the request
     // If split by space and have more than 1 element then the request have been rejected before.
     private String undoRequest = null;
@@ -109,12 +118,17 @@ public class Lobby {
     }
 
     public void PlayAgain() {
-        var oPlayer = this.redPlayer;
-        this.redPlayer = this.blackPlayer;
-        this.blackPlayer = oPlayer;
+        var oPlayer = redPlayer;
+        redPlayer = blackPlayer;
+        blackPlayer = oPlayer;
 
-        this.board = BOARD;
+        isRedTurn = true;
+        player1PlayAgain = false;
+        player2PlayAgain = false;
+
+        board = BOARD;
         moves.clear();
+        state = State.PLAYING;
     }
 
     public void Join(String player2) {
@@ -146,14 +160,17 @@ public class Lobby {
         if (player2 != null && player2.equals(player)) {
             player2 = null;
             player2Ready = false;
+            player2PlayAgain = false;
         }
 
         if (player1.equals(player)) {
             player1 = player2;
             player1Ready = player2Ready;
+            player1PlayAgain = player2PlayAgain;
 
             player2 = null;
             player2Ready = false;
+            player2PlayAgain = false;
 
             if (state == State.WAITING) {
                 // If the lobby is in waiting state then player 2 will become red player

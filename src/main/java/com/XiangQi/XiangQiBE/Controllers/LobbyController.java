@@ -39,9 +39,9 @@ public class LobbyController {
 
     @PostMapping
     public ResponseEntity<ResponseObject<LobbyDto>> createLobby(
-            @SessionAttribute(name = SessionAttrs.Username) String username) {
+            @SessionAttribute(name = SessionAttrs.Username) String username, @RequestParam(name = "private", required = false) boolean isPrivate) {
         try {
-            Lobby lobby = lobbyService.Create(username);
+            Lobby lobby = lobbyService.Create(username, isPrivate);
 
             return ResponseObject.Response(HttpStatus.OK, "Room created", new LobbyDto(lobby));
         } catch (Exception e) {
@@ -104,6 +104,9 @@ public class LobbyController {
                     "The message of type " + message.getPayload().getType()
                             + " doesn't belong to types that allow to send by client");
             switch (message.getPayload().getType()) {
+                case PLAY_AGAIN:
+                    lobbyService.PlayAgain(player);
+                break;
                 case DISCONNECT:
                     lobbyService.Quit(player);
                     break;
@@ -122,6 +125,7 @@ public class LobbyController {
                 case UNDO_REPLY:
                     lobbyService.ReplyToUndo(player, message.getPayload());
                     break;
+                
                 default:
                     throw exception;
             }

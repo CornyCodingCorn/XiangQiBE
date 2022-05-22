@@ -19,6 +19,6 @@ public interface LobbyRepo extends MongoRepository<Lobby, String>{
     @Query("{ state: ?0 }")
     List<Lobby> findByState(State state);
 
-    @Query("{$and: [{player2: {$exists: false}}, {state: \"WAITING\"}]}")
+    @Query("{$and: [{player2: {$exists: false}}, {state: \"WAITING\"}, {isPrivate: false}]}")
     List<Lobby> findEmpty();
 }

@@ -33,13 +33,15 @@ public class LobbyService {
     private Board board;
     private HashMap<String, Timer> schedules = new HashMap<>();
 
-    public Lobby Create(String player) throws LobbyException {
+    public Lobby Create(String player, boolean isPrivate) throws LobbyException {
         var joinedLobby = lobbyRepo.findByPlayer(player);
         if (joinedLobby.isPresent()) {
             Quit(player);
         }
 
         var lobby = new Lobby(player);
+        lobby.setPrivate(isPrivate);
+
         lobbyRepo.save(lobby);
         sendLobbiesMessage(lobby, player, false);
 
@@ -48,6 +50,32 @@ public class LobbyService {
 
     public List<Lobby> GetAll() {
         return lobbyRepo.findEmpty();
+    }
+
+    public void PlayAgain(String player) throws LobbyException {
+        Lobby lobby = lobbyRepo.findByPlayer(player).orElseThrow(() -> new LobbyException("", "You can't play again while not in a lobby"));
+        if (lobby.getState() != State.FINISHED) {
+            throw new LobbyException(lobby.getId(), "The lobby is still playing");
+        }
+
+        if (lobby.getPlayer1() == null || lobby.getPlayer2() == null) {
+            return;
+        }
+
+        if (lobby.getPlayer1().equals(player)) {
+            lobby.setPlayer1PlayAgain(!lobby.isPlayer1PlayAgain());
+        } else {
+            lobby.setPlayer2PlayAgain(!lobby.isPlayer2PlayAgain());
+        }
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.PLAY_AGAIN, player, lobby, "");
+
+        // If both player want to play again
+        if (lobby.isPlayer1PlayAgain() && lobby.isPlayer2PlayAgain()) {
+            lobby.PlayAgain();
+            sendMessageToLobby(lobby.getId(), LobbyMessage.Type.RESTART, player, lobby, "");
+        }
+
+        lobbyRepo.save(lobby);
     }
 
     public Lobby Join(String lobbyID, String player) throws LobbyException {
@@ -198,6 +226,9 @@ public class LobbyService {
                 lobby.getPlayer1().equals(player) ? lobby.getPlayer2() : lobby.getPlayer1();
         sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, otherPlayer, lobby,
                 LobbyMessage.EndType.constructData(EndType.WIN, ""));
+
+        lobby.Finish();
+        lobbyRepo.save(lobby);
     }
 
     public void AskForUndo(String player) throws LobbyException {
