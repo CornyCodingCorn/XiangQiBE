@@ -106,7 +106,7 @@ public class LobbyController {
             switch (message.getPayload().getType()) {
                 case PLAY_AGAIN:
                     lobbyService.PlayAgain(player);
-                break;
+                    break;
                 case DISCONNECT:
                     lobbyService.Quit(player);
                     break;
@@ -125,7 +125,9 @@ public class LobbyController {
                 case UNDO_REPLY:
                     lobbyService.ReplyToUndo(player, message.getPayload());
                     break;
-                
+                case CHANGE_SETTING:
+                    lobbyService.ChangeSetting(player, message.getPayload());
+                    break;
                 default:
                     throw exception;
             }

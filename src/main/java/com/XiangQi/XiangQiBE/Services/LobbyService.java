@@ -13,6 +13,8 @@ import com.XiangQi.XiangQiBE.Models.Lobby.State;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage.EndType;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
+import com.XiangQi.XiangQiBE.utils.JsonUtils;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -40,7 +42,9 @@ public class LobbyService {
         }
 
         var lobby = new Lobby(player);
-        lobby.setPrivate(isPrivate);
+        // lobby.setPrivate(isPrivate);
+
+        lobby.getSetting().setPrivate(isPrivate);
 
         lobbyRepo.save(lobby);
         sendLobbiesMessage(lobby, player, false);
@@ -282,6 +286,19 @@ public class LobbyService {
         lobby.setBoard(newStr.split(" ")[1]);
         lobby.ResetUndoRequest();
         lobbyRepo.save(lobby);
+    }
+
+    public Lobby ChangeSetting(String player, LobbyMessage message) throws LobbyException, Exception {
+        var lobby = getPlayerLobby(player);
+        
+        lobby.ChangeSetting(message.getData());
+        
+        sendMessageToLobby(lobby.getId(), LobbyMessage.Type.CHANGE_SETTING, player, lobby, 
+                JsonUtils.getJsonString(new LobbyDto(lobby)));
+
+        lobbyRepo.save(lobby);
+
+        return lobby;
     }
 
     public Lobby getPlayerLobby(String player) throws LobbyException {

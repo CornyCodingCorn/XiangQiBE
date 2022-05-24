@@ -26,7 +26,9 @@ public class LobbyMessage {
         UNDO_REPLY(9),
 
         PLAY_AGAIN(10),
-        RESTART(11);
+        RESTART(11),
+
+        CHANGE_SETTING(12);
 
         @Getter
         private int value;

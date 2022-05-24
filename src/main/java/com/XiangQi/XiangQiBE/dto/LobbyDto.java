@@ -1,6 +1,8 @@
 package com.XiangQi.XiangQiBE.dto;
 
 import com.XiangQi.XiangQiBE.Models.Lobby;
+import com.XiangQi.XiangQiBE.Models.LobbySetting;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +24,8 @@ public class LobbyDto {
 
     private String board;
 
+    private LobbySetting setting;
+
     public LobbyDto(Lobby lobby) {
         id = lobby.getId();
         
@@ -35,5 +39,7 @@ public class LobbyDto {
         player2Ready = lobby.isPlayer2Ready();
 
         board = lobby.getBoard();
+
+        setting = lobby.getSetting();
     }
 }
