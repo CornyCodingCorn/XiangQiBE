@@ -145,22 +145,6 @@ public class Piece {
 		return result;
 	}
 
-	public String generatePos(
-		String board,
-		int x,
-		int y,
-		boolean isRed,
-		boolean forceReturn
-	) {
-		String result = "";
-		char piece = getPiece(board, x, y);
-		if (isPosValid(x, y) && (!isSameColor(piece, isRed) || forceReturn)) {
-			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
-		}
-
-		return result;
-	}
-
 	// Generate move until hit invalid or another piece
 	public String generateGenericMove(
 		String board,
