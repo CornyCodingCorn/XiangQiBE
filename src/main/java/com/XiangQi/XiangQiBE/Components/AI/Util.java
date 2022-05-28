@@ -3,6 +3,8 @@ package com.XiangQi.XiangQiBE.Components.AI;
 import java.io.IOException;
 import java.io.InputStream;
 
+// This is a utils file that required for the AI.
+//
 public class Util {
 	public static int MIN_MAX(int min, int mid, int max) {
 		return mid < min ? min : mid > max ? max : mid;

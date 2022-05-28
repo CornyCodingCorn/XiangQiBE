@@ -93,7 +93,7 @@ public class Board {
 
 		_board = StringUtils.replaceCharAt(_board, PieceType.EMPTY.getValue(),
 				moveObj.oldX + moveObj.oldY * BOARD_COL);
-		_board = StringUtils.replaceCharAt(_board, "" + move.charAt(2),
+		_board = StringUtils.replaceCharAt(_board, move.charAt(2),
 				moveObj.newX + moveObj.newY * BOARD_COL);
 
 		return _board;
@@ -144,7 +144,7 @@ public class Board {
 	 * @return
 	 */
 	public Piece getPieceAt(int x, int y, boolean removeIt) {
-		PieceType piece = PieceType.fromCharString("" + this._board.charAt(x + y * BOARD_COL));
+		PieceType piece = PieceType.valueOfIgnoreCase(this._board.charAt(x + y * BOARD_COL));
 		if (removeIt) this._board = StringUtils.replaceCharAt(this._board, PieceType.EMPTY.getValue(), x + y * BOARD_COL);
 
 		Vector<Piece> pieceList = null;
@@ -225,8 +225,8 @@ public class Board {
 		this._removeAllPieces();
 
 		for (int i = 0; i < this._board.length(); i++) {
-			String charString = String.valueOf(this._board.charAt(i));
-			PieceType type = PieceType.fromCharString(charString.toLowerCase());
+			final char pieceChar = this._board.charAt(i);
+			PieceType type = PieceType.valueOfIgnoreCase(pieceChar);
 
 			// Ignore empty and same color
 			if (type == PieceType.EMPTY)
@@ -253,7 +253,7 @@ public class Board {
 					break;
 				case KING:
 					var piece = Piece.getPieceObject(this._board, i, King.class);
-					if (charString.toLowerCase().equals(charString)) {
+					if (Character.isLowerCase(pieceChar)) {
 						this.blackKing = piece;
 					} else {
 						this.redKing = piece;
@@ -332,7 +332,7 @@ public class Board {
 				break;
 
 			String fillInStr =
-					value.substring(0, 2) + (isRed ? type.getValue().toUpperCase() : type.getValue());
+					value.substring(0, 2) + (isRed ? Character.toUpperCase(type.getValue()) : type.getValue());
 
 			if (!isKingChecked(board, isRed, fillInStr)) {
 				result += value + "/";
@@ -366,7 +366,7 @@ public class Board {
 			fillX = Integer.parseInt(String.valueOf(fillPiece.charAt(0)));
 			fillY = Integer.parseInt(String.valueOf(fillPiece.charAt(1)));
 
-			boardStr = StringUtils.replaceCharAt(boardStr, "" + fillPiece.charAt(2),
+			boardStr = StringUtils.replaceCharAt(boardStr, fillPiece.charAt(2),
 					fillX + fillY * BOARD_COL);
 		}
 
@@ -410,7 +410,7 @@ public class Board {
 			for (int j = 0; j < arr.length; j++) {
 				var str = arr[j];
 				if (!str.equals("")
-						&& String.valueOf(str.charAt(2)).toLowerCase().equals(PieceType.KING.getValue()))
+						&& PieceType.KING.compareIgnoreCase(str.charAt(2)))
 					return true;
 			}
 		}

@@ -42,7 +42,7 @@ public class Canon extends Piece {
 
 			// If the last piece of the returned result is a
 			// piece then add the last one to the result of this function.
-			if (last.length() >= 3 && !String.valueOf(last.charAt(2)).equals(PieceType.EMPTY.getValue())) {
+			if (last.length() >= 3 && last.charAt(2) != PieceType.EMPTY.getValue()) {
 				result += last + "/";
 			}
 		}

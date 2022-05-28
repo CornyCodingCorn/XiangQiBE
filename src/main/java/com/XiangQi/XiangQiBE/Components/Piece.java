@@ -12,26 +12,31 @@ import lombok.Setter;
 public class Piece {
   @AllArgsConstructor
   public enum PieceType {
-    KING("k"),
-    ADVISOR("a"),
-    ELEPHANT("e"),
-    ROOK("r"),
-    CANON("c"),
-    HORSE("h"),
-    PAWN("p"),
-    EMPTY("0");
+    KING('k'),
+    ADVISOR('a'),
+    ELEPHANT('e'),
+    ROOK('r'),
+    CANON('c'),
+    HORSE('h'),
+    PAWN('p'),
+    EMPTY('0');
   
     @Getter
     @Setter
-    private String value;
+    private char value;
 
-		public static PieceType fromCharString(String value) {
+		public static PieceType valueOfIgnoreCase(char value) {
+			value = Character.toLowerCase(value);
 			for (PieceType type : PieceType.values()) {
-				if (type.value.equalsIgnoreCase(value)) {
+				if (type.value == value) {
 						return type;
 				}
 			}
 			throw new IllegalArgumentException("No piece with type " + value + " found");
+		}
+
+		public boolean compareIgnoreCase(char value) {
+			return Character.toLowerCase(value) == this.value;
 		}
   }
 
@@ -39,51 +44,47 @@ public class Piece {
 	boolean isRed = false;
 	Vector2 location = Vector2.create(0, 0);
 
-	public boolean isSameColor(String piece, boolean isRed) {
-    String charString = "";
-    charString = piece;
-
-		if (charString.equals(PieceType.EMPTY.getValue())) 
+	public boolean isSameColor(char piece, boolean isRed) {
+		if (piece == PieceType.EMPTY.value) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase().equals(charString);
+			return Character.isUpperCase(piece);
 		} else {
-			return charString.toLowerCase().equals(charString);
+			return Character.isLowerCase(piece);
 		}
   }
 	//public isSameColor(board: string, isRed: boolean, x: number,	y: number,): boolean;
 	public boolean isSameColor(String info, boolean isRed, int x, int y) {
-		String charString = "";
+		char piece = PieceType.EMPTY.value;
 		if (x != 0 || y != 0) 
-      charString = info;
+      return false;
 		else 
-      charString = getPiece(info, x, y);
+      piece = getPiece(info, x, y);
 
-		if (charString.equals(PieceType.EMPTY.getValue())) 
+		if (piece == PieceType.EMPTY.value) 
       return false;
 
 		if (isRed) {
-			return charString.toUpperCase().equals(charString);
+			return Character.isUpperCase(piece);
 		} else {
-			return charString.toLowerCase().equals(charString);
+			return Character.isLowerCase(piece);
 		}
 	}
 
-	public static String getPiece(String board, int x, int y) {
+	public static char getPiece(String board, int x, int y) {
 		if (!isPosValid(x, y))
-			return "";
-		return String.valueOf(board.charAt(x + y * Board.BOARD_COL));
+			return ' ';
+		return board.charAt(x + y * Board.BOARD_COL);
 	}
 
 	public static PieceType getPieceType(String board, int x, int y)  {
-		String charString = String.valueOf(board.charAt(x + y * Board.BOARD_COL)).toLowerCase();
-		return PieceType.fromCharString(charString);
+		return PieceType.valueOfIgnoreCase(board.charAt(x + y * Board.BOARD_COL));
 	}
 
 	public static boolean isPieceRed(String board, int x, int y) {
-		String charString = getPiece(board, x, y);
-		return charString.equals(charString.toUpperCase());
+		char c = getPiece(board, x, y);
+		return Character.isUpperCase(c);
 	}
 
 	public static boolean isPieceRed(String piece) {
@@ -136,7 +137,7 @@ public class Piece {
 		boolean isRed
 	) {
 		String result = "";
-		String piece = getPiece(board, x, y);
+		char piece = getPiece(board, x, y);
 		if (isPosValid(x, y) && !isSameColor(piece, isRed)) {
 			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
@@ -152,7 +153,7 @@ public class Piece {
 		boolean forceReturn
 	) {
 		String result = "";
-		String piece = getPiece(board, x, y);
+		char piece = getPiece(board, x, y);
 		if (isPosValid(x, y) && (!isSameColor(piece, isRed) || forceReturn)) {
 			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
 		}
@@ -185,8 +186,8 @@ public class Piece {
 				if (str.equals(""))
 					break;
 
-				anotherPiece = str.equals("") || !String.valueOf(str.charAt(2)).equals(PieceType.EMPTY.getValue());
-				if (!String.valueOf(str.charAt(2)).equals(PieceType.EMPTY.getValue())) {
+				anotherPiece = str.charAt(2) != PieceType.EMPTY.value;
+				if (anotherPiece) {
 					if (allowKill) result += str;
 				} else {
 					result += str;
