@@ -1,5 +1,7 @@
 package com.XiangQi.XiangQiBE.Components;
 
+import java.util.LinkedList;
+import com.XiangQi.XiangQiBE.Common.Move;
 import com.XiangQi.XiangQiBE.utils.Vector2;
 
 import org.springframework.stereotype.Component;
@@ -130,23 +132,23 @@ public class Piece {
 		);
 	}
 
-	public String generatePos(
+	public Move generatePos(
 		String board,
 		int x,
 		int y,
 		boolean isRed
 	) {
-		String result = "";
+		Move move = null;
 		char piece = getPiece(board, x, y);
 		if (isPosValid(x, y) && !isSameColor(piece, isRed)) {
-			result = String.valueOf(x) + String.valueOf(y) + piece + "/";
+			move = Move.Create(x, y, piece);
 		}
 
-		return result;
+		return move;
 	}
 
 	// Generate move until hit invalid or another piece
-	public String generateGenericMove(
+	public LinkedList<Move> generateGenericMove(
 		String board,
 		int x,
 		int y,
@@ -157,7 +159,7 @@ public class Piece {
 	) {
 		boolean isValid = true;
 		boolean anotherPiece = false;
-		String result = "";
+		LinkedList<Move> moves = new LinkedList<Move>();
 
 		do {
 			x += deltaX;
@@ -165,24 +167,24 @@ public class Piece {
 
 			isValid = isPosValid(x, y);
 			if (isValid) {
-				String str = generatePos(board, x, y, isRed);
+				var move = generatePos(board, x, y, isRed);
 				
-				if (str.equals(""))
+				if (move == null)
 					break;
 
-				anotherPiece = str.charAt(2) != PieceType.EMPTY.value;
+				anotherPiece = move.getPiece() != PieceType.EMPTY.value;
 				if (anotherPiece) {
-					if (allowKill) result += str;
+					if (allowKill) moves.add(move);
 				} else {
-					result += str;
+					moves.add(move);
 				}
 			}
 		} while (isValid && !anotherPiece);
 
-		return result;
+		return moves;
 	}
 
-  public String generateMove(String board, int x, int y, boolean isRed) {
-    return "";
+  public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+    return null;
   }
 }

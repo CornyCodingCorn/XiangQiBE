@@ -2,7 +2,9 @@ package com.XiangQi.XiangQiBE.utils;
 
 public class StringUtils {
   public static String replaceCharAt(String str, char replace, int index) {
-    return str.substring(0, index) + replace + str.substring(index + 1);
+    char[] arr = str.toCharArray();
+    arr[index] = replace;
+    return String.valueOf(arr);
   }
 
   public static boolean isStringEmpty(String str) {
