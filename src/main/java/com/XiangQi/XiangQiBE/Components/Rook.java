@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Rook extends Piece {
-	public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+	public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
 		LinkedList<Move> result = new LinkedList<>();
 
 		result.addAll(generateGenericMove(board, x, y, isRed, -1, 0, true));

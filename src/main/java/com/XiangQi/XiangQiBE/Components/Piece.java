@@ -57,7 +57,7 @@ public class Piece {
 		}
   }
 	//public isSameColor(board: string, isRed: boolean, x: number,	y: number,): boolean;
-	public boolean isSameColor(String info, boolean isRed, int x, int y) {
+	public boolean isSameColor(char[] info, boolean isRed, int x, int y) {
 		char piece = PieceType.EMPTY.value;
 		if (x != 0 || y != 0) 
       return false;
@@ -74,33 +74,41 @@ public class Piece {
 		}
 	}
 
-	public static char getPiece(String board, int x, int y) {
+	public static char getPiece(char[] board, int x, int y) {
 		if (!isPosValid(x, y))
 			return ' ';
-		return board.charAt(x + y * Board.BOARD_COL);
+		return board[x + y * Board.BOARD_COL];
 	}
 
-	public static PieceType getPieceType(String board, int x, int y)  {
-		return PieceType.valueOfIgnoreCase(board.charAt(x + y * Board.BOARD_COL));
+	public static PieceType getPieceType(char[] board, int x, int y)  {
+		return PieceType.valueOfIgnoreCase(getPieceChar(board, x, y));
 	}
 
-	public static boolean isPieceRed(String board, int x, int y) {
+	public static char getPieceChar(char[] board, int x, int y) {
+		return board[x + y * Board.BOARD_COL];
+	}
+	public static char setPieceChar(char[] board, int x, int y, char piece) {
+		return board[x + y * Board.BOARD_COL] = piece;
+	}
+
+	public static boolean isPieceRed(char[] board, int x, int y) {
 		char c = getPiece(board, x, y);
 		return Character.isUpperCase(c);
 	}
 
-	public static boolean isPieceRed(String piece) {
-		return piece.equals(piece.toUpperCase());
+	public static boolean isPieceRed(char piece) {
+		return Character.isUpperCase(piece);
 	}
 
 	//public static getPieceObject(board: string, x: number, y: number): Piece 
-	public static <T extends Piece> T getPieceObject(String board, int index, Class<T> pieceClass) {
+	// This implementation is so dumb
+	public static Piece getPieceObject(char[] board, int index) {
 		int posX = index % Board.BOARD_COL;
 		int posY = (int)Math.floor(index / Board.BOARD_COL);
 		PieceType type = getPieceType(board, posX, posY);
 
 		try {
-			T result = pieceClass.getConstructor().newInstance();
+			Piece result = new Piece();
 			result.location.x = posX;
 			result.location.y = posY;
 			result.type = type;
@@ -113,7 +121,7 @@ public class Piece {
 		}
 	}
 
-	public Piece getPieceObject(String board, int x, int y) {
+	public Piece getPieceObject(char[] board, int x, int y) {
 		int posX = x;
 		int posY = y;
 
@@ -133,7 +141,7 @@ public class Piece {
 	}
 
 	public Move generatePos(
-		String board,
+		char[] board,
 		int x,
 		int y,
 		boolean isRed
@@ -149,7 +157,7 @@ public class Piece {
 
 	// Generate move until hit invalid or another piece
 	public LinkedList<Move> generateGenericMove(
-		String board,
+		char[] board,
 		int x,
 		int y,
 		boolean isRed,
@@ -184,7 +192,7 @@ public class Piece {
 		return moves;
 	}
 
-  public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+  public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
     return null;
   }
 }

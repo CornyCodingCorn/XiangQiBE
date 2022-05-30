@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Advisor extends Piece {
-	public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+	public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
 		LinkedList<Move> result = new LinkedList<>();
 
 		if ((!isRed || y - 1 > 6) && x - 1 > 2)

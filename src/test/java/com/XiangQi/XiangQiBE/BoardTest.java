@@ -6,14 +6,17 @@ import com.XiangQi.XiangQiBE.Components.Board.Result;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import lombok.extern.log4j.Log4j2;
 
 @SpringBootTest
+@Log4j2
 public class BoardTest {
   @Autowired
   Board board;
 
   @Test
   void TestFirstMoves() {
+    var time = System.nanoTime();
     board.setBoard(    
     "rheakaehr" +
     "000000000" +
@@ -25,8 +28,9 @@ public class BoardTest {
     "0C00000C0" +
     "000000000" +
     "RHEAKAEHR");
-
+    log.info(System.nanoTime() - time);
     // Wrong format
+    time = System.nanoTime();
     assertEquals(false, board.IsMoveValid("00-2"));
 
     assertEquals(true, board.IsMoveValid("00r02"));
@@ -49,6 +53,7 @@ public class BoardTest {
     assertEquals(true, board.IsMoveValid("77C70"));
     assertEquals(false, board.IsMoveValid("77C72"));
     assertEquals(true, board.IsMoveValid("77C73"));
+    log.info(System.nanoTime() - time);
   }
 
   @Test

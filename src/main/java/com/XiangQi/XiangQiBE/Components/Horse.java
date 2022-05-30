@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Horse extends Piece {
-	public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+	public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
 		LinkedList<Move> result = new LinkedList<>();
 
 		if (isValid(board, x, y + 1)) {
@@ -33,7 +33,7 @@ public class Horse extends Piece {
 		return result;
 	}
 
-	private boolean isValid(String board, int x, int y) {
+	private boolean isValid(char[] board, int x, int y) {
 		return PieceType.EMPTY.compareIgnoreCase(getPiece(board, x, y));
 	}
 }

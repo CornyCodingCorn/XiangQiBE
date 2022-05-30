@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Canon extends Piece {
-	public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+	public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
 		LinkedList<Move> result = new LinkedList<>();
 
 		result.addAll(_generateInDirection(board, x, y, isRed, -1, 0));
@@ -17,7 +17,7 @@ public class Canon extends Piece {
 		return result;
 	}
 
-	private LinkedList<Move> _generateInDirection(String board, int x, int y, boolean isRed, int deltaX,
+	private LinkedList<Move> _generateInDirection(char[] board, int x, int y, boolean isRed, int deltaX,
 			int deltaY) {
 		LinkedList<Move> result = new LinkedList<>();
 		result.addAll(generateGenericMove(board, x, y, isRed, deltaX, deltaY, false));

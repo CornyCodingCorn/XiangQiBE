@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Elephant extends Piece {
-	public LinkedList<Move> generateMove(String board, int x, int y, boolean isRed) {
+	public LinkedList<Move> generateMove(char[] board, int x, int y, boolean isRed) {
 		LinkedList<Move> result = new LinkedList<>();
 
 		if ((!isRed || y - 2 > 4) && getPiece(board, x - 1, y - 1) == PieceType.EMPTY.getValue())
