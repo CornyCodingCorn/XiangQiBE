@@ -3,6 +3,8 @@ package com.XiangQi.XiangQiBE.Models;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
+
+import com.XiangQi.XiangQiBE.utils.JsonUtils;
 import com.mongodb.lang.Nullable;
 import org.hibernate.validator.internal.util.stereotypes.Immutable;
 import org.springframework.data.annotation.Id;
@@ -88,15 +90,18 @@ public class Lobby {
     @Setter
     private State state = State.WAITING;
 
-    @Setter
-    @NotBlank
-    private boolean isPrivate = false;
+    // @Setter
+    // @NotBlank
+    // private boolean isPrivate = false;
 
     @Setter
     private boolean player1PlayAgain = false;
     @Setter
     private boolean player2PlayAgain = false;
 
+    @Setter
+    @NotBlank
+    private LobbySetting setting;
     // If != null then the string value represents the player that made the request
     // If split by space and have more than 1 element then the request have been rejected before.
     private String undoRequest = null;
@@ -106,6 +111,8 @@ public class Lobby {
         this.redPlayer = player1;
 
         moves = new ArrayList<String>();
+
+        setting = new LobbySetting(2,10,false,false);
     }
 
     public void Start() {
@@ -197,5 +204,18 @@ public class Lobby {
     }
     public void ResetUndoRequest() {
         undoRequest = null;
+    }
+
+    public void ChangeSetting(String settingStr) throws Exception {
+        try {
+            var set = JsonUtils.getJsonAsMap(settingStr);
+            setting.setMinPerTurn(Integer.parseInt(set.get("minPerTurn")));
+            setting.setTotalMin(Integer.parseInt(set.get("totalMin")));
+            setting.setVsBot(Boolean.parseBoolean(set.get("isVsBot")));
+            setting.setPrivate(Boolean.parseBoolean(set.get("isPrivate")));
+        } catch (Exception e) {
+            //TO DO Exception
+            throw new Exception("Something wrong with setting", e);
+        }
     }
 }
