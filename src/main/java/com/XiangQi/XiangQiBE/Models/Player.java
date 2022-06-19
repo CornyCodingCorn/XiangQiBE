@@ -1,6 +1,5 @@
 package com.XiangQi.XiangQiBE.Models;
 
-import java.util.Date;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PositiveOrZero;

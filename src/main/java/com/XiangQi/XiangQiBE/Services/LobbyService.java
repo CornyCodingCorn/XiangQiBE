@@ -44,7 +44,7 @@ public class LobbyService {
         var lobby = new Lobby(player);
         // lobby.setPrivate(isPrivate);
 
-        lobby.getSetting().setPrivate(isPrivate);
+        lobby.getSetting().setPrivateLobby(isPrivate);
 
         lobbyRepo.save(lobby);
         sendLobbiesMessage(lobby, player, false);

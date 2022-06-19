@@ -112,7 +112,7 @@ public class Lobby {
 
         moves = new ArrayList<String>();
 
-        setting = new LobbySetting(2,10,false,false);
+        setting = new LobbySetting(5,10,false,false);
     }
 
     public void Start() {
@@ -212,7 +212,7 @@ public class Lobby {
             setting.setMinPerTurn(Integer.parseInt(set.get("minPerTurn")));
             setting.setTotalMin(Integer.parseInt(set.get("totalMin")));
             setting.setVsBot(Boolean.parseBoolean(set.get("isVsBot")));
-            setting.setPrivate(Boolean.parseBoolean(set.get("isPrivate")));
+            setting.setPrivateLobby(Boolean.parseBoolean(set.get("isPrivate")));
         } catch (Exception e) {
             //TO DO Exception
             throw new Exception("Something wrong with setting", e);
