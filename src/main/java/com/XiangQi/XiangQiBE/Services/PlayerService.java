@@ -55,8 +55,13 @@ public class PlayerService {
   public Player get(String username) throws UsernameNotFoundException {
     return playerRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
   }
-  
-  public void savePlayerProfile(String username, Byte[] image) {
-    
+
+  public Player changeProfile(String username, int index) throws UsernameNotFoundException {
+    var player = get(username);
+
+    player.setProfile(index);
+    playerRepo.save(player);
+
+    return player;
   }
 }

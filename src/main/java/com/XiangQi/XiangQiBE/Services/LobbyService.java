@@ -1,5 +1,7 @@
 package com.XiangQi.XiangQiBE.Services;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
@@ -9,9 +11,12 @@ import com.XiangQi.XiangQiBE.Components.Board.Result;
 import com.XiangQi.XiangQiBE.Models.LobbiesMessage;
 import com.XiangQi.XiangQiBE.Models.Lobby;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage;
+import com.XiangQi.XiangQiBE.Models.Match;
 import com.XiangQi.XiangQiBE.Models.Lobby.State;
 import com.XiangQi.XiangQiBE.Models.LobbyMessage.EndType;
 import com.XiangQi.XiangQiBE.Repositories.LobbyRepo;
+import com.XiangQi.XiangQiBE.Repositories.MatchesRepo;
+import com.XiangQi.XiangQiBE.Repositories.PlayerRepo;
 import com.XiangQi.XiangQiBE.dto.LobbyDto;
 import com.XiangQi.XiangQiBE.utils.JsonUtils;
 
@@ -31,6 +36,9 @@ public class LobbyService {
     }
 
     private LobbyRepo lobbyRepo;
+    private MatchesRepo matchesRepo;
+    private PlayerRepo playerRepo;
+    private PlayerService playerService;
     private SimpMessagingTemplate simpMessagingTemplate;
     private Board board;
     private HashMap<String, Timer> schedules = new HashMap<>();
@@ -380,6 +388,38 @@ public class LobbyService {
     }
 
     private void finishMatch(Lobby lobby, String victor, String data) {
+        try {
+            if (victor.equals("None")) {
+                var player1 = playerService.get(lobby.getPlayer1());
+                var player2 = playerService.get(lobby.getPlayer2());
+
+                player1.setDrawMatches(player1.getDrawMatches() + 1);
+                player2.setDrawMatches(player2.getDrawMatches() + 1);
+
+                playerRepo.save(player1);
+                playerRepo.save(player2);
+            }
+            else {
+                var winPlayer = playerService.get(victor);
+                var lostPlayer = playerService.get(lobby.getPlayer1().equals(victor) ? lobby.getPlayer2() : lobby.getPlayer1());
+                
+                winPlayer.setWinMatches(winPlayer.getWinMatches() + 1);
+                lostPlayer.setLostMatches(lostPlayer.getLostMatches() + 1);
+                
+                playerRepo.save(winPlayer);
+                playerRepo.save(lostPlayer);
+            }
+        } catch (Exception e) {}
+        
+        var match = new Match();
+        var moves = new String[lobby.getMoves().size()];
+        match.setBlackPlayer(lobby.getBlackPlayer());
+        match.setRedPlayer(lobby.getRedPlayer());
+        match.setMoves(lobby.getMoves().toArray(moves));
+        match.setVictor(victor);
+        match.setTime(Date.valueOf(LocalDate.now()));
+        matchesRepo.save(match);
+        
         lobby.setState(Lobby.State.FINISHED);
         lobbyRepo.save(lobby);
         sendMessageToLobby(lobby.getId(), LobbyMessage.Type.END, victor, lobby, data);

@@ -16,10 +16,25 @@ public class PlayerDto {
     private String username;
     @NotBlank
     private String email;
+    @NotBlank
+    private Integer profile;
+    @NotBlank
+    private float winLostRatio;
+    @NotBlank
+    private int totalMatches;
+    @NotBlank
+    private int rank;
+    @NotBlank
 
     public PlayerDto(Player player) {
         this.id = player.getId();
         this.username = player.getUsername();
         this.email = player.getEmail();
+        this.profile = player.getProfile();
+
+        totalMatches = player.getWinMatches() + player.getLostMatches();
+        winLostRatio = player.getWinMatches() / totalMatches;
+
+        //Calculate rank
     }
 }

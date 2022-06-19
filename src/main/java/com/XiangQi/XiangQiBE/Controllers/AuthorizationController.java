@@ -86,7 +86,7 @@ public class AuthorizationController {
                     registerInfo.getPassword(), registerInfo.getEmail());
 
             return ResponseObject.Response(HttpStatus.CREATED, "Register successfully",
-                    new PlayerDto(player.getId(), player.getUsername(), player.getEmail()));
+                    new PlayerDto(player));
         } catch (Exception e) {
             return ResponseObject.Response(HttpStatus.CONFLICT, e.getMessage(), null);
         }
