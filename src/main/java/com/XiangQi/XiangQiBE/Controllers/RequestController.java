@@ -25,7 +25,7 @@ public class RequestController {
     public ResponseEntity<ResponseObject<Object>> requestChangePassword(
         @RequestParam(name = "username", required = true) String username
         ) {
-
+            
         try {
             requestService.SendRequest(username, Request.Type.CHANGE_PASSWORD);
             return ResponseObject.Response(HttpStatus.OK, "Email sent.", null);
