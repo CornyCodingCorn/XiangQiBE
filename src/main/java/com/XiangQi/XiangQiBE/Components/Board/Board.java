@@ -1,8 +1,8 @@
-package com.XiangQi.XiangQiBE.Components;
+package com.XiangQi.XiangQiBE.Components.Board;
 
 import java.util.Vector;
 
-import com.XiangQi.XiangQiBE.Components.Piece.PieceType;
+import com.XiangQi.XiangQiBE.Components.Board.Piece.PieceType;
 import com.XiangQi.XiangQiBE.utils.PieceMove;
 import com.XiangQi.XiangQiBE.utils.StringUtils;
 import com.XiangQi.XiangQiBE.utils.Vector2;

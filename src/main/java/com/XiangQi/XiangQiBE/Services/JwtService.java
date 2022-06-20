@@ -27,6 +27,7 @@ public class JwtService {
 
     public JwtPair generateJwtToken(String username) {
         Token tokenDoc = new Token("");
+        tokenDoc.setUsername(username);
         // To document _id
         tokenRepo.save(tokenDoc);
 

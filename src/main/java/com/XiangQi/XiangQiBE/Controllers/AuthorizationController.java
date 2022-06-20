@@ -3,10 +3,12 @@ package com.XiangQi.XiangQiBE.Controllers;
 import javax.validation.Valid;
 import com.XiangQi.XiangQiBE.Configurations.SessionAttrs;
 import com.XiangQi.XiangQiBE.Models.Player;
+import com.XiangQi.XiangQiBE.Models.Request;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
 import com.XiangQi.XiangQiBE.Security.Jwt.JwtUtils;
 import com.XiangQi.XiangQiBE.Services.JwtService;
 import com.XiangQi.XiangQiBE.Services.PlayerService;
+import com.XiangQi.XiangQiBE.Services.RequestService;
 import com.XiangQi.XiangQiBE.dto.PlayerDto;
 import com.XiangQi.XiangQiBE.dto.PlayerLoginDto;
 import com.XiangQi.XiangQiBE.dto.PlayerRegisterDto;
@@ -36,6 +38,7 @@ public class AuthorizationController {
     private JwtUtils jwtUtils;
     private AuthenticationManager authenticationManager;
     private JwtService jwtService;
+    private RequestService requestService;
 
     @GetMapping()
     public ResponseEntity<ResponseObject<PlayerDto>> getPlayerInfo(@SessionAttribute(name = SessionAttrs.Username) String username) {
@@ -63,6 +66,7 @@ public class AuthorizationController {
             Player player;
 
             player = playerService.get(loginRequest.getUsername());
+            if (!player.isValidated()) throw new Exception("Account not validated!");
 
             var jwtPair = jwtService.generateJwtToken(player.getUsername());
 
@@ -85,6 +89,7 @@ public class AuthorizationController {
             var player = playerService.create(registerInfo.getUsername(),
                     registerInfo.getPassword(), registerInfo.getEmail());
 
+            requestService.SendRequest(player.getUsername(), Request.Type.EMAIL_VERIFY);
             return ResponseObject.Response(HttpStatus.CREATED, "Register successfully",
                     new PlayerDto(player));
         } catch (Exception e) {

@@ -2,7 +2,6 @@ package com.XiangQi.XiangQiBE.Models;
 
 import javax.validation.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Getter;
 import lombok.NonNull;
@@ -20,4 +19,8 @@ public class Token {
     @Setter
     @NonNull
     private String token;
+
+    @NotBlank
+    @Setter
+    private String username;
 }

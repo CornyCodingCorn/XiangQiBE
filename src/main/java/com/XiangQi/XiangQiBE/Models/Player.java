@@ -32,15 +32,12 @@ public class Player {
   private Integer profile = 0;
 
   @Setter
-  @NonNull
   private Integer lostMatches = 0;
 
   @Setter
-  @NonNull
   private Integer winMatches = 0;
 
   @Setter
-  @NonNull
   private Integer drawMatches = 0;
 
   @Setter

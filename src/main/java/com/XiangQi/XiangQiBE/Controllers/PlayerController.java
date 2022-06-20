@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.XiangQi.XiangQiBE.Models.Match;
 import com.XiangQi.XiangQiBE.Models.Player;
 import com.XiangQi.XiangQiBE.Models.ResponseObject;
+import com.XiangQi.XiangQiBE.Services.MatchService;
 import com.XiangQi.XiangQiBE.Services.PlayerService;
 import com.XiangQi.XiangQiBE.dto.PlayerDto;
 
@@ -23,6 +25,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PlayerController {
     PlayerService playerService;
+    MatchService matchService;
     
     @PutMapping("/profile")
     public ResponseEntity<ResponseObject<PlayerDto>> changePlayerProfile(@RequestParam(name = "username") String username, @RequestParam(name = "profile", required =  true) Integer index) {
@@ -43,6 +46,16 @@ public class PlayerController {
                             "User " + player.getUsername() + " login successfully", new PlayerDto(player)));
 
             return response;
+        } catch (Exception e) {
+            return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<ResponseObject<Match[]>> getPlayerMatches(@RequestParam(name = "username", required = true) String username) {
+        try {
+            var matches = matchService.getPlayerMatches(username);
+            return ResponseObject.Response(HttpStatus.OK, "History found.", matches.toArray(new Match[0]));
         } catch (Exception e) {
             return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
         }

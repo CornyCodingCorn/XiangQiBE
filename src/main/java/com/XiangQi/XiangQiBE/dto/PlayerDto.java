@@ -32,8 +32,8 @@ public class PlayerDto {
         this.email = player.getEmail();
         this.profile = player.getProfile();
 
-        totalMatches = player.getWinMatches() + player.getLostMatches();
-        winLostRatio = player.getWinMatches() / totalMatches;
+        totalMatches = player.getWinMatches() + player.getLostMatches() + player.getDrawMatches();
+        winLostRatio = totalMatches == 0  ? player.getWinMatches() : player.getWinMatches() / (float)player.getLostMatches();
 
         //Calculate rank
     }

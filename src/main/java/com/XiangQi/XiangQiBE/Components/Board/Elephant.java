@@ -1,4 +1,4 @@
-package com.XiangQi.XiangQiBE.Components;
+package com.XiangQi.XiangQiBE.Components.Board;
 
 import org.springframework.stereotype.Component;
 

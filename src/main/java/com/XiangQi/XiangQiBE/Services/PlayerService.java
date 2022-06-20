@@ -3,7 +3,11 @@ package com.XiangQi.XiangQiBE.Services;
 import javax.validation.ValidationException;
 import com.XiangQi.XiangQiBE.Components.Validator;
 import com.XiangQi.XiangQiBE.Models.Player;
+import com.XiangQi.XiangQiBE.Models.Request;
+import com.XiangQi.XiangQiBE.Repositories.MatchesRepo;
 import com.XiangQi.XiangQiBE.Repositories.PlayerRepo;
+import com.XiangQi.XiangQiBE.Repositories.TokenRepo;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +36,9 @@ public class PlayerService {
 
   private PasswordEncoder passwordEncoder;
   private PlayerRepo playerRepo;
+  private TokenRepo tokenRepo;
   private Validator validator;
+  private MatchesRepo matchesRepo;
 
   public Player create(String username, String password, String email) throws EmailExistsException, UsernameExistsException, ValidationException {
     if (playerRepo.findByUsername(username).isPresent()) {
@@ -52,8 +58,29 @@ public class PlayerService {
     return player;
   }
 
+  public Player changePassword(String username, String password) throws UsernameNotFoundException {
+    var player = get(username);
+    var tokens = tokenRepo.getAllPlayerToken(username);
+    for (var token : tokens) {
+      tokenRepo.delete(token);
+    }
+
+    password = passwordEncoder.encode(password);
+    player.setPassword(password);
+    validator.validate(player);
+
+    playerRepo.save(player);
+
+    return player;
+  }
+
   public Player get(String username) throws UsernameNotFoundException {
-    return playerRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    var player = playerRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    player.setLostMatches(matchesRepo.countLostMatches(username));
+    player.setWinMatches(matchesRepo.countWinMatches(username));
+    player.setDrawMatches(matchesRepo.countDrawMatches(username));
+    
+    return player;
   }
 
   public Player changeProfile(String username, int index) throws UsernameNotFoundException {
@@ -63,5 +90,9 @@ public class PlayerService {
     playerRepo.save(player);
 
     return player;
+  }
+
+  public void requestChangeEmail() {
+
   }
 }
