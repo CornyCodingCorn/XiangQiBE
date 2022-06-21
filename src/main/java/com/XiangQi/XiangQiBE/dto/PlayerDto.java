@@ -26,7 +26,7 @@ public class PlayerDto {
     @NotBlank
     private Integer profile;
     @NotBlank
-    private float winLostRatio;
+    private Float winLostRatio;
     @NotBlank
     private int totalMatches;
     @NotBlank
@@ -41,8 +41,16 @@ public class PlayerDto {
         this.profile = player.getProfile();
         this.rankingPoint = player.getRankingPoint();
 
-        totalMatches = player.getWinMatches() + player.getLostMatches() + player.getDrawMatches();
-        winLostRatio = totalMatches == 0  ? player.getWinMatches() : player.getWinMatches() / (float)player.getLostMatches();
+        final int win = player.getWinMatches();
+        final int lost = player.getLostMatches();
+        totalMatches = win + lost + player.getDrawMatches();
+        if (win + lost == 0) {
+            winLostRatio = null;
+        } else if (lost == 0) {
+            winLostRatio = Float.POSITIVE_INFINITY;
+        } else {
+            winLostRatio = win / (float)lost;
+        }
 
         //Calculate rank
         rank = player.getRank();
