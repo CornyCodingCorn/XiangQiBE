@@ -381,11 +381,11 @@ public class Board {
 		// Check if the king is seeing each other :))
 		if (ourKing.location.x == king.location.x) {
 			int startIdx = Math.min(ourKing.location.y, king.location.y) + 1;
-			int endIdx = Math.max(ourKing.location.y, king.location.y) - 1;
+			int endIdx = Math.max(ourKing.location.y, king.location.y);
 
 			boolean blocked = false;
 			for (int i = startIdx; i < endIdx; i++) {
-				PieceType piece = Piece.getPieceType(board.getBoard(), ourKing.location.x, i);
+				PieceType piece = Piece.getPieceType(boardStr, ourKing.location.x, i);
 				if (piece != PieceType.EMPTY) {
 					blocked = true;
 					break;

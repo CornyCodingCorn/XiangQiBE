@@ -395,6 +395,8 @@ public class LobbyService {
         match.setVictor(victor);
         match.setTime(Date.valueOf(LocalDate.now()));
         matchesRepo.save(match);
+
+        playerService.UpdateScore(victor, victor.equals(lobby.getPlayer1()) ? lobby.getPlayer2() : lobby.getPlayer1());
         
         lobby.Finish();
         lobbyRepo.save(lobby);

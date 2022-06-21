@@ -40,6 +40,14 @@ public class Player {
   @Setter
   private Integer drawMatches = 0;
 
+  @Setter 
+  @PositiveOrZero
+  private Integer rankingPoint = 0;
+
+  @Setter
+  @PositiveOrZero
+  private Integer rank = 0;
+
   @Setter
   @NotBlank
   @Size(max=120)
@@ -53,10 +61,6 @@ public class Player {
   @lombok.NonNull
   @Size(max=50)
   private String email;
-
-  @Setter
-  @PositiveOrZero
-  private int Score = 0;
 
   @NonNull
   private boolean validated = false;

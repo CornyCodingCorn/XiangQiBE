@@ -60,4 +60,16 @@ public class PlayerController {
             return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
         }
     }
+
+    @GetMapping("/rank")
+    public ResponseEntity<ResponseObject<String[]>> getTopPlayer(@RequestParam(name = "count", required = false) Integer count) {
+        try {
+            if (count == null) count = 20;
+
+            var result = playerService.GetTopPlayer(count);
+            return ResponseObject.Response(HttpStatus.OK, "Found top " + count + " players", result.toArray(new String[0]));
+        } catch (Exception e) {
+            return ResponseObject.Response(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
+    }
 }

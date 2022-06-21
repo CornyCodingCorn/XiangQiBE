@@ -18,7 +18,7 @@ public class MatchService {
     public List<Match> getPlayerMatches(String username) {
         var matches = repo.findByPlayer(username);
         ArrayList<Match> top20 = new ArrayList<>();
-        for (int i = 0; i < 20 && i < matches.size(); i++) {
+        for (int i = matches.size() - 1; i >=  matches.size() - 20 && i >= 0; i--) {
             top20.add(matches.get(i));
         }
 

@@ -1,5 +1,8 @@
 package com.XiangQi.XiangQiBE.Services;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.ValidationException;
 import com.XiangQi.XiangQiBE.Components.Validator;
 import com.XiangQi.XiangQiBE.Models.Player;
@@ -79,6 +82,7 @@ public class PlayerService {
     player.setLostMatches(matchesRepo.countLostMatches(username));
     player.setWinMatches(matchesRepo.countWinMatches(username));
     player.setDrawMatches(matchesRepo.countDrawMatches(username));
+    player.setRank(playerRepo.countHigherRank(player.getRankingPoint()) + 1);
     
     return player;
   }
@@ -92,7 +96,40 @@ public class PlayerService {
     return player;
   }
 
-  public void requestChangeEmail() {
+  public void UpdateScore(String victor, String loser) {
+    try {
+      final int baseScore = 69;
+      final int maxScore = 150;
 
+      final var victorPlayer = get(victor);
+      final var loserPlayer = get(loser);
+
+      if (victorPlayer.getRankingPoint() == null) {
+        victorPlayer.setRankingPoint(0);
+      }
+      if (loserPlayer.getRankingPoint() == null) {
+        loserPlayer.setRankingPoint(0);
+      }
+
+      final int delta = victorPlayer.getRankingPoint() - loserPlayer.getRankingPoint();
+      final int transferScore = baseScore - (int)Math.round(Math.pow(delta / baseScore, 3));
+      
+      victorPlayer.setRankingPoint(victorPlayer.getRankingPoint() + Math.max(0, Math.min(maxScore, transferScore)));
+      loserPlayer.setRankingPoint(Math.max(0, loserPlayer.getRankingPoint() - Math.max(0, transferScore)));
+
+      playerRepo.save(victorPlayer);
+      playerRepo.save(loserPlayer);
+    } catch (Exception e) {} 
+  }
+
+  public List<String> GetTopPlayer(int count) {
+    var players = playerRepo.getTopPlayers(count);
+
+    var result = new ArrayList<String>();
+    for (var player : players) {
+      result.add(player.getUsername() + " " + player.getRankingPoint());
+    }
+
+    return result;
   }
 }
